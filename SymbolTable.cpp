@@ -5,6 +5,7 @@
 #include <iostream>
 #include "SymbolTable.h"
 #include "SymbolTableManager.h"
+#include "CodeGenerator.h"
 
 SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, const ScopeType scopeType) : parent(parent), scopeType(scopeType)
 {}

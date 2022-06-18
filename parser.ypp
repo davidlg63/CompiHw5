@@ -2,6 +2,7 @@
 #include <iostream>
 #include "hw3_output.hpp"
 #include "SymbolTableManager.h"
+#include "CodeGenerator.h"
 
 
 int yylex();
@@ -48,8 +49,10 @@ using namespace std;
 %right ASSIGN
 %left RELOP_EQUALITY
 %left RELOP_RELATIONAL
-%left BINOP_PLUS_MINUS
-%left BINOP_MUL_DIV
+%left BINOP_PLUS
+%left BINOP_MINUS
+%left BINOP_MUL
+%left BINOP_DIV
 %right NOT
 %nonassoc NUM
 %nonassoc STRING
@@ -220,21 +223,57 @@ using namespace std;
 
     Exp: LPAREN Exp RPAREN	                                    {$$ = new retType(); dynamic_cast<retType*>($$)->type= dynamic_cast<retType*>($2)->type;
                                                                 delete dynamic_cast<retType*>($2); }|
-         Exp BINOP_PLUS_MINUS Exp	                            {$$ = new retType(); 
-																checkIfNumType(dynamic_cast<retType*>($1)->type);
-																checkIfNumType(dynamic_cast<retType*>($3)->type);
-                                                                if(dynamic_cast<retType*>($3)->type==Type_::TYPE_INT)
+																
+														
+         Exp BINOP_PLUS Exp	                            		{$$ = new retType(); 
+																retType* first = dynamic_cast<retType*>($1);
+																retType* second = dynamic_cast<retType*>($3);
+																checkIfNumType(first->type);
+																checkIfNumType(second->type);
+                                                                if(second->type == Type_::TYPE_INT)
                                                                 {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
-                                                                else {dynamic_cast<retType*>($$)->type=dynamic_cast<retType*>($1)->type;}
-                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);} |
+                                                                else {dynamic_cast<retType*>($$)->type = first->type;}
+																CodeGenerator::generateAdditionCode(first, second, dynamic_cast<retType*>($$));
+                                                                delete first; delete second;
+																} |
+																
+		Exp BINOP_MINUS Exp	                            		{$$ = new retType(); 
+																retType* first = dynamic_cast<retType*>($1);
+																retType* second = dynamic_cast<retType*>($3);
+																checkIfNumType(first->type);
+																checkIfNumType(second->type);
+                                                                if(second->type==Type_::TYPE_INT)
+                                                                {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
+                                                                else {dynamic_cast<retType*>($$)->type=firstf->type;}
+																CodeGenerator::generateSubtractionCode(first, second, dynamic_cast<retType*>($$));
+                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
+																} |
 
-		 Exp BINOP_MUL_DIV Exp	                                {$$ = new retType(); 
-																checkIfNumType(dynamic_cast<retType*>($1)->type);
-																checkIfNumType(dynamic_cast<retType*>($3)->type);
-                                                                if(dynamic_cast<retType*>($3)->type==Type_::TYPE_INT)
+		 Exp BINOP_MUL Exp	                                	{
+																$$ = new retType(); 
+																retType* first = dynamic_cast<retType*>($1);
+																retType* second = dynamic_cast<retType*>($3);
+																checkIfNumType(first->type);
+																checkIfNumType(second->type);
+                                                                if(second->type==Type_::TYPE_INT)
                                                                 {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
-                                                                else {dynamic_cast<retType*>($$)->type=dynamic_cast<retType*>($1)->type;}
-                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);} |
+                                                                else {dynamic_cast<retType*>($$)->type=first->type;}
+																CodeGenerator::generateMultiplicationCode(first, second, dynamic_cast<retType*>($$));
+                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
+																} |
+																
+		 Exp BINOP_DIV Exp	                                	{
+																$$ = new retType(); 
+																retType* first = dynamic_cast<retType*>($1);
+																retType* second = dynamic_cast<retType*>($3);
+																checkIfNumType(first->type);
+																checkIfNumType(second->type);
+                                                                if(second->type==Type_::TYPE_INT)
+                                                                {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
+                                                                else {dynamic_cast<retType*>($$)->type=first->type;}
+																CodeGenerator::generateDivisionCode(first, second, dynamic_cast<retType*>($$));
+                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
+																} |
 
          ID          	                                        {
 																	$$ = new retType();
