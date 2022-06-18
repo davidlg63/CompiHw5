@@ -38,6 +38,7 @@ public:
     Type_ doesFunctionExist(const std::string& functionName, const std::vector<Type_> params);
     Type_ getFunctionReturnType(const std::string& functionName);
     Type_ getVarType(const std::string& name);
+    std::string getVarRegister(const std::string& var_name);
     bool isFunction (const std::string& name);
     Type_ getCurrentScopeFunctionReturnType();
     bool isWhileScoped();

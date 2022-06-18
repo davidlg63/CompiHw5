@@ -23,6 +23,8 @@ bool isRetTypeMismatch(Type_ expType);
 void checkIfMainRedefined(const std::string& functionName);
 void CheckIfValidTypeForVar(const Type_ type_to_assign);
 void debug();
+
+using namespace std;
 %}
 
 %nonassoc VOID
@@ -228,9 +230,16 @@ void debug();
 
          ID          	                                        {
 																	$$ = new retType();
-																	if((symbolTableManager.getVarType(dynamic_cast<Id*>($1)->name)==Type_::TYPE_NOT_VALID) || (symbolTableManager.isFunction(dynamic_cast<Id*>($1)->name)))
+																	Type_ type = symbolTableManager.getVarType(dynamic_cast<Id*>($1)->name);
+																	if(type == Type_::TYPE_NOT_VALID || (symbolTableManager.isFunction(dynamic_cast<Id*>($1)->name)))
 																		{output::errorUndef(yylineno, dynamic_cast<Id*>($1)->name); exit(1);}
-																	dynamic_cast<retType*>($$)->type = symbolTableManager.getVarType(dynamic_cast<Id*>($1)->name);
+																
+																	string id_reg = symbolTableManager.getVarRegister(dynamic_cast<Id*>($1)->name);
+																	string result_register = regGenerator.getRegister();
+																	dynamic_cast<retType*>($$)->type = type;
+																	dynamic_cast<retType*>($$)->register = result_register;
+																	string code = result_register + " = load i32, i32* " + id_reg;
+																	CodeBuffer::instance().emit(code);
 																	delete dynamic_cast<Id*>($1);
 																} |
          Call        	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = dynamic_cast<call2Fun*>($1)->type;

@@ -15,6 +15,7 @@ struct SymbolTableEntry{
     int offset;
     std::vector<Type_> params;
     bool isFunction;
+    std::string register_name;
 
     ///Use this ctor for regular symbols
     SymbolTableEntry(const std::string& name, const Type_ type, int offset);

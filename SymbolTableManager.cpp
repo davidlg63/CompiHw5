@@ -260,6 +260,22 @@ void SymbolTableManager::outputFunctionDeclaration(SymbolTableEntry& entry) {
     output::printID(entry.name, entry.offset, type);
 }
 
+std::string SymbolTableManager::getVarRegister(const std::string& var_name) {
+    std::shared_ptr<SymbolTable> currentTable = this->top();
+    while (nullptr != currentTable)
+    {
+        for(const SymbolTableEntry& entry : currentTable->table)
+        {
+            if(false == entry.isFunction && entry.name == var_name)
+            {
+                return entry.register_name;
+            }
+        }
+        currentTable = currentTable->parent;
+    }
+    return ""; //Shouldn't reach here, a check that var exists should be performed before calling this method.
+}
+
 
 
 
