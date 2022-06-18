@@ -38,7 +38,10 @@ public:
     Type_ doesFunctionExist(const std::string& functionName, const std::vector<Type_> params);
     Type_ getFunctionReturnType(const std::string& functionName);
     Type_ getVarType(const std::string& name);
+    /// gets the register name that is assigned to the variable.
     std::string getVarRegister(const std::string& var_name);
+    ///Assigns a register to a variable.
+    void assignRegisterToVar(const std::string& var_name, const std::string& reg);
     bool isFunction (const std::string& name);
     Type_ getCurrentScopeFunctionReturnType();
     bool isWhileScoped();

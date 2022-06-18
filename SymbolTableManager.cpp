@@ -276,6 +276,22 @@ std::string SymbolTableManager::getVarRegister(const std::string& var_name) {
     return ""; //Shouldn't reach here, a check that var exists should be performed before calling this method.
 }
 
+void SymbolTableManager::assignRegisterToVar(const std::string& var_name, const std::string& reg)
+{
+    std::shared_ptr<SymbolTable> currentTable = this->top();
+    while (nullptr != currentTable)
+    {
+        for(const SymbolTableEntry& entry : currentTable->table)
+        {
+            if(false == entry.isFunction && entry.name == var_name)
+            {
+                entry.register_name = reg;
+            }
+        }
+        currentTable = currentTable->parent;
+    }
+}
+
 
 
 

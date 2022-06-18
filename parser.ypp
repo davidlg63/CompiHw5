@@ -142,17 +142,25 @@ using namespace std;
 																	CheckType(dynamic_cast<retType*>($1)->type, dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
 																	std::string freshReg = regGenerator.getRegister();
+																	dynamic_cast<retType*>($4)->register = freshReg;
+																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
+                                                                    CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
 																} |
 				AUTO ID ASSIGN Exp SC	                        {
 																	CheckIfValidTypeForVar(dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($4)->type, dynamic_cast<Id*>($2)->name);
 																	std::string freshReg = regGenerator.getRegister();
+																	dynamic_cast<retType*>($4)->register = freshReg;
+																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
+                                                                    CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<retType*>($4); delete dynamic_cast<Id*>($2);
 																} |
 				ID ASSIGN Exp SC                	            {
 																	CheckIfAssignmentValid(dynamic_cast<Id*>($1)->name, dynamic_cast<retType*>($3)->type);
-																	std::string freshReg = regGenerator.getRegister();
+																	string freshReg = regGenerator.getRegister();
+																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
+                                                                    CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<Id*>($1);delete dynamic_cast<retType*>($3);
 																} |
 				Call SC	                                        {
