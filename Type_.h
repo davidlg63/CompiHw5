@@ -1,0 +1,14 @@
+//
+// Created by X on 5/30/2022.
+//
+
+//
+// Created by User on 5/29/2022.
+//
+
+#ifndef SYMBOLTABLEMANAGER_CPP_TYPE__H
+#define SYMBOLTABLEMANAGER_CPP_TYPE__H
+
+enum Type_{TYPE_STRING, TYPE_INT, TYPE_VOID, TYPE_BYTE, TYPE_NOT_VALID, TYPE_BOOL};
+
+#endif //SYMBOLTABLEMANAGER_CPP_TYPE__H
