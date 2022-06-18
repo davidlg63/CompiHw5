@@ -15,6 +15,6 @@ string RegisterGenerator::getRegister() {
         _current_reg_prefix += 't';
         _current_reg_number = 0;
     }
-    return _current_reg_prefix + std::to_string(_current_reg_number+1);
+    return _current_reg_prefix + std::to_string(_current_reg_number++);
 }
 
