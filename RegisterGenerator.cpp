@@ -13,6 +13,7 @@ string RegisterGenerator::getRegister() {
     if (INT_MAX == _current_reg_number)
     {
         _current_reg_prefix += 't';
+        _current_reg_number = 0;
     }
     return _current_reg_prefix + std::to_string(_current_reg_number);
 }
