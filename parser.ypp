@@ -291,6 +291,7 @@ using namespace std;
 																} |
          Call        	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = dynamic_cast<call2Fun*>($1)->type;
                                                                 delete dynamic_cast<call2Fun*>($1);} |
+
          NUM         	                                        {
 																	$$ = new retType();
 																	retType* ret = dynamic_cast<retType*>($$);

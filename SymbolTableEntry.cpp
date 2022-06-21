@@ -5,6 +5,7 @@
 #include "SymbolTableEntry.h"
 #include "SymbolTableManager.h"
 
+
 SymbolTableEntry::SymbolTableEntry(const std::string &_name, const Type_ _type, const int _offset) :
         name(_name), type(_type), offset(_offset), isFunction(false)
 {}
