@@ -20,14 +20,17 @@ public:
     generateSubtractionCode(const retType *firstNum, const retType *secondNum, const retType *result, string regNum);
 
     static void
-    generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result, string regNum);
+    generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum);
 
     static void
-    generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, string regNum);
+    generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum);
 
-    static void DoAction(string resultReg, string firstReg, string secondReg, string action);
+    static void DoAction(const string& resultReg, const string& firstReg, const string& secondReg, const string& action);
 
+    //Code that assigns value to register reg
     static void generateIntByteCreationCode(const std::string &reg, const std::string &value);
+
+    static void generateBoolNot(const std::string& resultReg, const std::string& expressionReg);
 };
 
 

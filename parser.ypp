@@ -10,6 +10,7 @@ void yyerror (const char*);
 extern int yylineno;
 
 SymbolTableManager symbolTableManager = SymbolTableManager();
+CodeBuffer& codeBuff = CodeBuffer::instance();
 
 void CheckType( Type_ target, Type_ given);
 void checkIfVarExists(Type_ type, const std::string& name);
@@ -332,6 +333,7 @@ using namespace std;
 																	ret->type = Type_::TYPE_BOOL;
 																	std::string reg = RegisterGenerator::getRegister();
 																	ret->reg = reg;
+																	codeBuff.emit(code);
 																	delete dynamic_cast<retType*>($2);
 																} |
 																

@@ -72,7 +72,7 @@ void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retTy
         DoAction(regNum, firstNum->reg, secondNum->reg, "sub");
 }
 
-void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, string regNum)
+void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
 {
     /************************************ add devide by zero error***********************************/
     string code;
@@ -105,7 +105,7 @@ void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType 
         DoAction(regNum, firstNum->reg, secondNum->reg, "sdiv");
 }
 
-void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result, string regNum)
+void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
 {
     string code;
     if (firstNum->type == Type_::TYPE_INT && secondNum->type ==Type_::TYPE_BYTE)
@@ -137,7 +137,7 @@ void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const re
         DoAction(regNum, firstNum->reg, secondNum->reg, "mul");
 }
 
-void CodeGenerator::DoAction(string resultReg, string firstReg, string secondReg, string action)
+void CodeGenerator::DoAction(const string& resultReg, const string& firstReg, const string& secondReg, const string& action)
 {
     string code = "%t" + resultReg + " = "+ action + " i32 %t" +firstReg + ", %t" + secondReg;
     CodeBuffer::instance().emit(code);
@@ -145,6 +145,12 @@ void CodeGenerator::DoAction(string resultReg, string firstReg, string secondReg
 
 void CodeGenerator::generateIntByteCreationCode(const string &reg, const string &value) {
     string code = reg + "=" + "add i32 0, " + value;
+    CodeBuffer::instance().emit(code);
+}
+
+void CodeGenerator::generateBoolNot(const string &resultReg, const string &expressionReg) {
+     //Inverts the value of expressionReg, the addition is modulo 2 because the type is i1.
+    string code = resultReg + " = add i1 1, " + expressionReg;
     CodeBuffer::instance().emit(code);
 }
 
