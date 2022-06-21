@@ -56,7 +56,7 @@ struct Id : public SymbolBase
 struct retType : public SymbolBase
 {
     Type_ type;
-    std::string storeReg;
+    std::string reg;
     retType()= default;
 };
 

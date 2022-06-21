@@ -6,7 +6,8 @@
 
 using namespace std;
 
-RegisterGenerator::RegisterGenerator() : _current_reg_prefix("t"), _current_reg_number(0)
+
+RegisterGenerator::RegisterGenerator() : _current_reg_prefix("%t"), _current_reg_number(0)
 {}
 
 string RegisterGenerator::getRegister() {
