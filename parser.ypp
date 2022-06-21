@@ -317,13 +317,21 @@ using namespace std;
 																	delete num;
 																} |
          STRING      	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_STRING ;} |
+		 
          TRUE        	                                        {
 																	$$ = new retType();
-																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;
+																	retType* result = dynamic_cast<retType*>($$);
+																	result->type = Type_::TYPE_BOOL ;
+																	int location = codeBuff.emit("br label @");
+                                                                    result->trueList.push_back({location, BranchLabelIndex::FIRST});
 																} |
+																
          FALSE       	                                        {
 																	$$ = new retType(); 
-																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;
+																	retType* result = dynamic_cast<retType*>($$);
+																	result->type = Type_::TYPE_BOOL ;
+																	int location = codeBuff.emit("br label @");
+                                                                    result->falseList.push_back({location, BranchLabelIndex::FIRST});
 																} |
 																
          NOT Exp     	                                        {
