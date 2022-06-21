@@ -145,7 +145,7 @@ using namespace std;
 																	CheckType(dynamic_cast<retType*>($1)->type, dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
 																	std::string freshReg = regGenerator.getRegister();
-																	dynamic_cast<retType*>($4)->register = freshReg;
+																	dynamic_cast<retType*>($4)->reg = freshReg;
 																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
@@ -154,7 +154,7 @@ using namespace std;
 																	CheckIfValidTypeForVar(dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($4)->type, dynamic_cast<Id*>($2)->name);
 																	std::string freshReg = regGenerator.getRegister();
-																	dynamic_cast<retType*>($4)->register = freshReg;
+																	dynamic_cast<retType*>($4)->reg = freshReg;
 																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<retType*>($4); delete dynamic_cast<Id*>($2);
@@ -284,7 +284,7 @@ using namespace std;
 																	string id_reg = symbolTableManager.getVarRegister(dynamic_cast<Id*>($1)->name);
 																	string result_register = regGenerator.getRegister();
 																	dynamic_cast<retType*>($$)->type = type;
-																	dynamic_cast<retType*>($$)->register = result_register;
+																	dynamic_cast<retType*>($$)->reg = result_register;
 																	string code = result_register + " = load i32, i32* " + id_reg;
 																	CodeBuffer::instance().emit(code);
 																	delete dynamic_cast<Id*>($1);
@@ -297,7 +297,7 @@ using namespace std;
 																	Num* num = dynamic_cast<Num*>($1);
 																	std::string reg = regGenerator.getRegister();
 																	ret->type = Type_::TYPE_INT ;
-																	ret->register = reg;
+																	ret->reg = reg;
 																	CodeGenerator::generateIntByteCreationCode(reg, num->value);
 																	delete num;
 																} |
@@ -311,19 +311,37 @@ using namespace std;
 																	}
 																	std::string reg = regGenerator.getRegister();
 																	ret->type = Type_::TYPE_BYTE;
-																	ret->register = reg;
+																	ret->reg = reg;
 																	CodeGenerator::generateIntByteCreationCode(reg, num->value);
 																	delete num;
 																} |
          STRING      	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_STRING ;} |
-         TRUE        	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;} |
-         FALSE       	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;} |
-         NOT Exp     	                                        {$$ = new retType(); CheckType(dynamic_cast<retType*>($2)->type, Type_::TYPE_BOOL);
-                                                                dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL; delete dynamic_cast<retType*>($2);} |
-         Exp AND Exp 	                                        {$$ = new retType(); CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL);
-                                                                CheckType(dynamic_cast<retType*>($3)->type, Type_::TYPE_BOOL);
-                                                                dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
-                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);} |
+         TRUE        	                                        {
+																	$$ = new retType();
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;
+																} |
+         FALSE       	                                        {
+																	$$ = new retType(); 
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;
+																} |
+																
+         NOT Exp     	                                        {
+																	$$ = new retType(); 
+																	CheckType(dynamic_cast<retType*>($2)->type, Type_::TYPE_BOOL);
+																	retType* ret = dynamic_cast<retType*>($$);
+																	ret->type = Type_::TYPE_BOOL;
+																	std::string reg = regGenerator.getRegister();
+																	ret->reg = reg;
+																	delete dynamic_cast<retType*>($2);
+																} |
+																
+         Exp AND Exp 	                                        {
+																	$$ = new retType(); CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL);
+																	CheckType(dynamic_cast<retType*>($3)->type, Type_::TYPE_BOOL);
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
+																	delete dynamic_cast<retType*>($1); 
+																	delete dynamic_cast<retType*>($3);
+																} |
          Exp OR Exp		                                        {$$ = new retType(); CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL);
                                                                 CheckType(dynamic_cast<retType*>($3)->type, Type_::TYPE_BOOL);
                                                                 dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
