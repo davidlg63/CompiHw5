@@ -291,11 +291,30 @@ using namespace std;
 																} |
          Call        	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = dynamic_cast<call2Fun*>($1)->type;
                                                                 delete dynamic_cast<call2Fun*>($1);} |
-         NUM         	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_INT ;
-                                                                delete dynamic_cast<Num*>($1);} |
-         NUM B       	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_BYTE;
-                                                                if(std::stoi(dynamic_cast<Num*>($1)->value) >= 256) {output::errorByteTooLarge(yylineno, dynamic_cast<Num*>($1)->value); exit(1);} 
-																delete dynamic_cast<Num*>($1);} |
+         NUM         	                                        {
+																	$$ = new retType();
+																	retType* ret = dynamic_cast<retType*>($$);
+																	Num* num = dynamic_cast<Num*>($1);
+																	std::string reg = regGenerator.getRegister();
+																	ret->type = Type_::TYPE_INT ;
+																	ret->register = reg;
+																	CodeGenerator::generateIntByteCreationCode(reg, num->value);
+																	delete num;
+																} |
+         NUM B       	                                        {
+																	$$ = new retType();
+																	retType* ret = dynamic_cast<retType*>($$);
+																	Num* num = dynamic_cast<Num*>($1);
+																	if(std::stoi(num->value) >= 256) {
+																		output::errorByteTooLarge(yylineno, num->value); 
+																		exit(1);
+																	}
+																	std::string reg = regGenerator.getRegister();
+																	ret->type = Type_::TYPE_BYTE;
+																	ret->register = reg;
+																	CodeGenerator::generateIntByteCreationCode(reg, num->value);
+																	delete num;
+																} |
          STRING      	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_STRING ;} |
          TRUE        	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;} |
          FALSE       	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL ;} |

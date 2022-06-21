@@ -14,6 +14,7 @@ public:
     static void generateSubtractionCode(const retType* firstNum, const retType* secondNum, const retType* result);
     static void generateMultiplicationCode(const retType* firstNum, const retType* secondNum, const retType* result);
     static void generateDivisionCode(const retType* firstNum, const retType* secondNum, const retType* result);
+    static void generateIntByteCreationCode(const std::string& reg, const std::string& value);
 };
 
 
