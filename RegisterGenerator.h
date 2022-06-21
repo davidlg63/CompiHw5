@@ -4,7 +4,7 @@
 
 #include <string>
 
- /*This class generates a new register name, of the format: "tx" where x is a number. if the numbers are excceeding int_max
+ /*This class generates a new register name, of the format: "tx" where x is a number. if the numbers are exceeding int_max
   * then we append more t's to the beginning, e.g: "tt6"*/
  class RegisterGenerator
 {

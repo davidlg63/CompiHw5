@@ -1,9 +1,6 @@
-//
-// Created by User on 6/18/2022.
-//
+
 
 #include "CodeGenerator.h"
-#include "bp.hpp"
 using namespace std;
 
 
@@ -149,9 +146,8 @@ void CodeGenerator::generateIntByteCreationCode(const string &reg, const string 
 }
 
 void CodeGenerator::generateBoolNot(const string &resultReg, const string &expressionReg) {
-     //Inverts the value of expressionReg, the addition is modulo 2 because the type is i1.
+    //Inverts the value of expressionReg, the addition is modulo 2 because the type is i1.
     string code = resultReg + " = add i1 1, " + expressionReg;
     CodeBuffer::instance().emit(code);
 }
-
 

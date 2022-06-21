@@ -7,11 +7,11 @@
 
 
 SymbolTableEntry::SymbolTableEntry(const std::string &_name, const Type_ _type, const int _offset) :
-        name(_name), type(_type), offset(_offset), isFunction(false)
+        name(_name), type(_type), offset(_offset), isFunction(false), register_name("")
 {}
 
 SymbolTableEntry::SymbolTableEntry(const std::string &name, const Type_ type, int offset, const std::vector<Type_>& params) :
-                                   name(name), type(type), offset(offset), params(params), isFunction(true)
+                                   name(name), type(type), offset(offset), params(params), isFunction(true), register_name("")
 {}
 
 void SymbolTableEntry::getArgsTypesAsStrings(std::vector<std::string> &arg_types) {

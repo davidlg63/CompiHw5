@@ -328,22 +328,30 @@ using namespace std;
 																
          NOT Exp     	                                        {
 																	$$ = new retType(); 
-																	CheckType(dynamic_cast<retType*>($2)->type, Type_::TYPE_BOOL);
 																	retType* ret = dynamic_cast<retType*>($$);
+																	retType* exp = dynamic_cast<retType*>($2);
+																	CheckType(exp->type, Type_::TYPE_BOOL);
 																	ret->type = Type_::TYPE_BOOL;
-																	std::string reg = RegisterGenerator::getRegister();
-																	ret->reg = reg;
-																	codeBuff.emit(code);
+																	ret->trueList = exp->falseList;
+																	ret->falseList = exp->trueList;
 																	delete dynamic_cast<retType*>($2);
 																} |
 																
-         Exp AND Exp 	                                        {
-																	$$ = new retType(); CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL);
-																	CheckType(dynamic_cast<retType*>($3)->type, Type_::TYPE_BOOL);
-																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
-																	delete dynamic_cast<retType*>($1); 
-																	delete dynamic_cast<retType*>($3);
+         Exp AND M_INSTR Exp 	                                {
+																	$$ = new retType(); 
+																	retType* result = dynamic_cast<retType*>($$);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($4);
+																	CheckType(exp1->type, Type_::TYPE_BOOL);
+																	CheckType(exp2->type, Type_::TYPE_BOOL);
+																	result->type = Type_::TYPE_BOOL;
+																	codeBuff.bpatch(exp1->trueList, dynamic_cast<Label*>($3)->label);
+																	result->trueList = exp2->trueList;
+																	result->falseList = codeBuff.merge(exp1->falseList, exp2->falseList);
+																	delete exp1; 
+																	delete exp2;
 																} |
+																
          Exp OR Exp		                                        {$$ = new retType(); CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL);
                                                                 CheckType(dynamic_cast<retType*>($3)->type, Type_::TYPE_BOOL);
                                                                 dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
@@ -367,6 +375,7 @@ using namespace std;
 	
 	CLOSE_SCOPE: {symbolTableManager.closeScope();};
 	Bool_Exp: Exp {CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL); delete dynamic_cast<retType*>($1); symbolTableManager.openScope();};
+	M_INSTR : {$$ = new Label(codeBuff.genLabel());};
 
 %%
 

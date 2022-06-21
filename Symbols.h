@@ -9,6 +9,7 @@
 #include <vector>
 #include "SymbolBase.h"
 #include "Type_.h"
+#include "bp.hpp"
 
 struct TerminalID : public SymbolBase
 {
@@ -57,6 +58,8 @@ struct retType : public SymbolBase
 {
     Type_ type;
     std::string reg;
+    std::vector<std::pair<int, BranchLabelIndex>> trueLise;
+    std::vector<std::pair<int, BranchLabelIndex>> falseList;
     retType()= default;
 };
 
@@ -71,6 +74,12 @@ struct Param : public SymbolBase
     std::string name;
     Type_ type;
     Param(const Type_ _type, const std::string& _name) : type(_type), name(_name){};
+};
+
+struct Label : public SymbolBase
+{
+    std::string label;
+    explicit Label(const std::string& lbl) : label(lbl){};
 };
 
 

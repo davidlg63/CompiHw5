@@ -1,12 +1,8 @@
-//
-// Created by User on 6/18/2022.
-//
 
 #ifndef HW5_CODEGENERATOR_H
 #define HW5_CODEGENERATOR_H
 
 #include "Symbols.h"
-<<<<<<< HEAD
 #include "bp.hpp"
 #include "RegisterGenerator.h"
 using namespace std;
@@ -31,6 +27,7 @@ public:
     static void generateIntByteCreationCode(const std::string &reg, const std::string &value);
 
     static void generateBoolNot(const std::string& resultReg, const std::string& expressionReg);
+
 };
 
 
