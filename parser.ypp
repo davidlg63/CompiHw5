@@ -352,10 +352,21 @@ using namespace std;
 																	delete exp2;
 																} |
 																
-         Exp OR Exp		                                        {$$ = new retType(); CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL);
-                                                                CheckType(dynamic_cast<retType*>($3)->type, Type_::TYPE_BOOL);
-                                                                dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
-                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);} |
+         Exp OR M_INSTR Exp		                                {
+																	$$ = new retType();
+																	retType* result = dynamic_cast<retType*>($$);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($4);
+																	CheckType(exp1->type, Type_::TYPE_BOOL);
+																	CheckType(exp2->type, Type_::TYPE_BOOL);
+																	result->type = Type_::TYPE_BOOL;
+																	codeBuff.bpatch(exp1->falseList, dynamic_cast<Label*>($3)->label);
+																	result->falseList = exp2->falseList;
+																	result->trueList = codeBuff.merge(exp1->trueList, exp2->trueList);
+																	delete exp1;
+																	delete exp2;
+																} |
+																
          Exp RELOP_EQUALITY Exp                                 {$$ = new retType(); checkIfNumType(dynamic_cast<retType*>($1)->type);
                                                                 checkIfNumType(dynamic_cast<retType*>($3)->type); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
                                                                 delete dynamic_cast<retType*>($3); delete dynamic_cast<retType*>($1) ;} |
