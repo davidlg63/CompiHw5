@@ -9,7 +9,6 @@
 #include "bp.hpp"
 #include "RegisterGenerator.h"
 using namespace std;
-string 
 class CodeGenerator{
 
 public:
