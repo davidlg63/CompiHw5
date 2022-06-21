@@ -8,12 +8,16 @@
   * then we append more t's to the beginning, e.g: "tt6"*/
  class RegisterGenerator
 {
-     std::string _current_reg_prefix;
-     int _current_reg_number;
+     std::string _current_reg_prefix = "%t";
+     int _current_reg_number = 0;
+    RegisterGenerator() = default;
+    std::string getRegisterInternal();
 
  public:
-    RegisterGenerator();
-    std::string getRegister();
+    RegisterGenerator(const RegisterGenerator&) = delete;
+    RegisterGenerator& operator=(const RegisterGenerator&) = delete;
+    static RegisterGenerator& Get();
+    static std::string getRegister();
 };
 
 #endif //HW5_REGISTERGENERATOR_H

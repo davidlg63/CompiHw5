@@ -10,7 +10,6 @@ void yyerror (const char*);
 extern int yylineno;
 
 SymbolTableManager symbolTableManager = SymbolTableManager();
-RegisterGenerator regGenerator = RegisterGenerator();
 
 void CheckType( Type_ target, Type_ given);
 void checkIfVarExists(Type_ type, const std::string& name);
@@ -144,7 +143,7 @@ using namespace std;
 				Type ID ASSIGN Exp SC	                        { 
 																	CheckType(dynamic_cast<retType*>($1)->type, dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
-																	std::string freshReg = regGenerator.getRegister();
+																	std::string freshReg = RegisterGenerator::getRegister();
 																	dynamic_cast<retType*>($4)->reg = freshReg;
 																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
                                                                     CodeBuffer::instance().emit(assignment_code);
@@ -153,7 +152,7 @@ using namespace std;
 				AUTO ID ASSIGN Exp SC	                        {
 																	CheckIfValidTypeForVar(dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($4)->type, dynamic_cast<Id*>($2)->name);
-																	std::string freshReg = regGenerator.getRegister();
+																	std::string freshReg = RegisterGenerator::getRegister();
 																	dynamic_cast<retType*>($4)->reg = freshReg;
 																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
                                                                     CodeBuffer::instance().emit(assignment_code);
@@ -161,7 +160,7 @@ using namespace std;
 																} |
 				ID ASSIGN Exp SC                	            {
 																	CheckIfAssignmentValid(dynamic_cast<Id*>($1)->name, dynamic_cast<retType*>($3)->type);
-																	string freshReg = regGenerator.getRegister();
+																	string freshReg = RegisterGenerator::getRegister();
 																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<Id*>($1);delete dynamic_cast<retType*>($3);
@@ -282,7 +281,7 @@ using namespace std;
 																		{output::errorUndef(yylineno, dynamic_cast<Id*>($1)->name); exit(1);}
 																
 																	string id_reg = symbolTableManager.getVarRegister(dynamic_cast<Id*>($1)->name);
-																	string result_register = regGenerator.getRegister();
+																	string result_register = RegisterGenerator::getRegister();
 																	dynamic_cast<retType*>($$)->type = type;
 																	dynamic_cast<retType*>($$)->reg = result_register;
 																	string code = result_register + " = load i32, i32* " + id_reg;
@@ -296,7 +295,7 @@ using namespace std;
 																	$$ = new retType();
 																	retType* ret = dynamic_cast<retType*>($$);
 																	Num* num = dynamic_cast<Num*>($1);
-																	std::string reg = regGenerator.getRegister();
+																	std::string reg = RegisterGenerator::getRegister();
 																	ret->type = Type_::TYPE_INT ;
 																	ret->reg = reg;
 																	CodeGenerator::generateIntByteCreationCode(reg, num->value);
@@ -310,7 +309,7 @@ using namespace std;
 																		output::errorByteTooLarge(yylineno, num->value); 
 																		exit(1);
 																	}
-																	std::string reg = regGenerator.getRegister();
+																	std::string reg = RegisterGenerator::getRegister();
 																	ret->type = Type_::TYPE_BYTE;
 																	ret->reg = reg;
 																	CodeGenerator::generateIntByteCreationCode(reg, num->value);
@@ -331,7 +330,7 @@ using namespace std;
 																	CheckType(dynamic_cast<retType*>($2)->type, Type_::TYPE_BOOL);
 																	retType* ret = dynamic_cast<retType*>($$);
 																	ret->type = Type_::TYPE_BOOL;
-																	std::string reg = regGenerator.getRegister();
+																	std::string reg = RegisterGenerator::getRegister();
 																	ret->reg = reg;
 																	delete dynamic_cast<retType*>($2);
 																} |
