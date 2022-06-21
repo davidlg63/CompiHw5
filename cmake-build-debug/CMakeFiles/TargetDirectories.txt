@@ -1,0 +1,3 @@
+/cygdrive/c/Users/X/Desktop/ClionCodes/CLionProjects/compilation/hw5_1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/cygdrive/c/Users/X/Desktop/ClionCodes/CLionProjects/compilation/hw5_1/cmake-build-debug/CMakeFiles/edit_cache.dir
+/cygdrive/c/Users/X/Desktop/ClionCodes/CLionProjects/compilation/hw5_1/cmake-build-debug/CMakeFiles/hw5_1.dir

@@ -1,0 +1,7 @@
+*.txt
+*.pdf
+cmake-build-debug/
+.idea/
+selfcheck-hw5
+makefile
+*.zip
