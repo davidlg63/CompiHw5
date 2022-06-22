@@ -47,7 +47,8 @@ using namespace std;
 %nonassoc SC
 %nonassoc ID
 %right ASSIGN
-%left RELOP_EQUALITY
+%left RELOP_EQ
+%left RELOP_NOTEQ
 %left RELOP_RELATIONAL
 %left BINOP_PLUS
 %left BINOP_MINUS
@@ -322,16 +323,16 @@ using namespace std;
 																	$$ = new retType();
 																	retType* result = dynamic_cast<retType*>($$);
 																	result->type = Type_::TYPE_BOOL ;
-																	int location = codeBuff.emit("br label @");
-                                                                    result->trueList.push_back({location, BranchLabelIndex::FIRST});
+																	int lineOfCode = codeBuff.emit("br label @");
+                                                                    result->trueList.push_back({lineOfCode, BranchLabelIndex::FIRST});
 																} |
 																
          FALSE       	                                        {
 																	$$ = new retType(); 
 																	retType* result = dynamic_cast<retType*>($$);
 																	result->type = Type_::TYPE_BOOL ;
-																	int location = codeBuff.emit("br label @");
-                                                                    result->falseList.push_back({location, BranchLabelIndex::FIRST});
+																	int lineOfCode = codeBuff.emit("br label @");
+                                                                    result->falseList.push_back({lineOfCode, BranchLabelIndex::FIRST});
 																} |
 																
          NOT Exp     	                                        {
@@ -375,12 +376,52 @@ using namespace std;
 																	delete exp2;
 																} |
 																
-         Exp RELOP_EQUALITY Exp                                 {$$ = new retType(); checkIfNumType(dynamic_cast<retType*>($1)->type);
-                                                                checkIfNumType(dynamic_cast<retType*>($3)->type); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
-                                                                delete dynamic_cast<retType*>($3); delete dynamic_cast<retType*>($1) ;} |
-		 Exp RELOP_RELATIONAL Exp                               {$$ = new retType(); checkIfNumType(dynamic_cast<retType*>($1)->type);
-                                                                checkIfNumType(dynamic_cast<retType*>($3)->type); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
-                                                                delete dynamic_cast<retType*>($3); delete dynamic_cast<retType*>($1) ;} | 
+         Exp RELOP_EQ Exp                                 		{
+																	$$ = new retType();
+																	checkIfNumType(dynamic_cast<retType*>($1)->type);
+																	checkIfNumType(dynamic_cast<retType*>($3)->type);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($3);
+																	retType* result = dynamic_cast<retType*>($$);
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
+																	std::string freshReg = RegisterGenerator::getRegister();
+																	std::string comparisonCode = freshReg + " = icmp eq i32 " + exp1->reg + ", " + exp2->reg;
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
+																	codeBuff.emit(comparisonCode);
+																	int lineOfCode = codeBuff.emit(jumpCode);
+																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
+                                                                    result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	delete exp1;
+																	delete exp2;
+																} |
+																
+		Exp RELOP_NOTEQ Exp                                 	{
+																	$$ = new retType();
+																	checkIfNumType(dynamic_cast<retType*>($1)->type);
+																	checkIfNumType(dynamic_cast<retType*>($3)->type);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($3);
+																	retType* result = dynamic_cast<retType*>($$);
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
+																	std::string freshReg = RegisterGenerator::getRegister();
+																	std::string comparisonCode = freshReg + " = icmp ne i32 " + exp1->reg + ", " + exp2->reg;
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
+																	codeBuff.emit(comparisonCode);
+																	int lineOfCode = codeBuff.emit(jumpCode);
+																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
+                                                                    result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	delete exp1;
+																	delete exp2;
+																} |
+																
+		 Exp RELOP_RELATIONAL Exp                               {
+																	$$ = new retType();
+																	checkIfNumType(dynamic_cast<retType*>($1)->type);
+																	checkIfNumType(dynamic_cast<retType*>($3)->type);
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
+																	delete dynamic_cast<retType*>($3);
+																	delete dynamic_cast<retType*>($1) ;
+																} | 
          LPAREN Type RPAREN Exp	                                {
 																	$$ = new retType();
 																	if(!(((dynamic_cast<retType*>($2)->type == Type_::TYPE_INT)  && (dynamic_cast<retType*>($4)->type == Type_::TYPE_BYTE))

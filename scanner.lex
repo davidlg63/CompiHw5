@@ -38,7 +38,8 @@ continue							return CONTINUE;
 \}									return RBRACE;
 =									return ASSIGN;
 \<|>|<=|>=							return RELOP_RELATIONAL;
-==|!=								return RELOP_EQUALITY;
+==									return RELOP_EQ;
+!=									return RELOP_NOTEQ
 \+									return BINOP_PLUS;
 \-									return BINOP_MINUS;
 \*									return BINOP_MUL;
