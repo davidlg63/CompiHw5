@@ -49,7 +49,10 @@ using namespace std;
 %right ASSIGN
 %left RELOP_EQ
 %left RELOP_NOTEQ
-%left RELOP_RELATIONAL
+%left RELOP_LESS
+%left RELOP_GREATER
+%left RELOP_LEQ
+%left RELOP_GEQ
 %left BINOP_PLUS
 %left BINOP_MINUS
 %left BINOP_MUL
@@ -414,14 +417,114 @@ using namespace std;
 																	delete exp2;
 																} |
 																
-		 Exp RELOP_RELATIONAL Exp                               {
+		 Exp RELOP_LESS Exp                               		{
 																	$$ = new retType();
 																	checkIfNumType(dynamic_cast<retType*>($1)->type);
 																	checkIfNumType(dynamic_cast<retType*>($3)->type);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($3);
+																	retType* result = dynamic_cast<retType*>($$);
 																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
-																	delete dynamic_cast<retType*>($3);
-																	delete dynamic_cast<retType*>($1) ;
+																	std::string freshReg = RegisterGenerator::getRegister();
+																	std::string comparisonCode;
+																	if(Type_::TYPE_BYTE == exp1->type && Type_::TYPE_BYTE == exp2->type)
+																	{
+																		comparisonCode = freshReg + " = icmp ult i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	else
+																	{
+																		comparisonCode = freshReg + " = icmp slt i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
+																	codeBuff.emit(comparisonCode);
+																	int lineOfCode = codeBuff.emit(jumpCode);
+																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
+                                                                    result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	delete exp1;
+																	delete exp2;
 																} | 
+																
+		Exp RELOP_GREATER Exp                               	{
+																	$$ = new retType();
+																	checkIfNumType(dynamic_cast<retType*>($1)->type);
+																	checkIfNumType(dynamic_cast<retType*>($3)->type);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($3);
+																	retType* result = dynamic_cast<retType*>($$);
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
+																	std::string freshReg = RegisterGenerator::getRegister();
+																	std::string comparisonCode;
+																	if(Type_::TYPE_BYTE == exp1->type && Type_::TYPE_BYTE == exp2->type)
+																	{
+																		comparisonCode = freshReg + " = icmp ugt i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	else
+																	{
+																		comparisonCode = freshReg + " = icmp sgt i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
+																	codeBuff.emit(comparisonCode);
+																	int lineOfCode = codeBuff.emit(jumpCode);
+																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
+                                                                    result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	delete exp1;
+																	delete exp2;
+																} | 
+																
+		Exp RELOP_LEQ Exp                               		{
+																	$$ = new retType();
+																	checkIfNumType(dynamic_cast<retType*>($1)->type);
+																	checkIfNumType(dynamic_cast<retType*>($3)->type);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($3);
+																	retType* result = dynamic_cast<retType*>($$);
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
+																	std::string freshReg = RegisterGenerator::getRegister();
+																	std::string comparisonCode;
+																	if(Type_::TYPE_BYTE == exp1->type && Type_::TYPE_BYTE == exp2->type)
+																	{
+																		comparisonCode = freshReg + " = icmp ule i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	else
+																	{
+																		comparisonCode = freshReg + " = icmp sle i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
+																	codeBuff.emit(comparisonCode);
+																	int lineOfCode = codeBuff.emit(jumpCode);
+																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
+                                                                    result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	delete exp1;
+																	delete exp2;
+																} | 
+																
+		Exp RELOP_GEQ Exp                               		{
+																	$$ = new retType();
+																	checkIfNumType(dynamic_cast<retType*>($1)->type);
+																	checkIfNumType(dynamic_cast<retType*>($3)->type);
+																	retType* exp1 = dynamic_cast<retType*>($1);
+																	retType* exp2 = dynamic_cast<retType*>($3);
+																	retType* result = dynamic_cast<retType*>($$);
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
+																	std::string freshReg = RegisterGenerator::getRegister();
+																	std::string comparisonCode;
+																	if(Type_::TYPE_BYTE == exp1->type && Type_::TYPE_BYTE == exp2->type)
+																	{
+																		comparisonCode = freshReg + " = icmp uge i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	else
+																	{
+																		comparisonCode = freshReg + " = icmp sge i32 " + exp1->reg + ", " + exp2->reg;
+																	}
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
+																	codeBuff.emit(comparisonCode);
+																	int lineOfCode = codeBuff.emit(jumpCode);
+																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
+                                                                    result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	delete exp1;
+																	delete exp2;
+																} | 
+																
          LPAREN Type RPAREN Exp	                                {
 																	$$ = new retType();
 																	if(!(((dynamic_cast<retType*>($2)->type == Type_::TYPE_INT)  && (dynamic_cast<retType*>($4)->type == Type_::TYPE_BYTE))
