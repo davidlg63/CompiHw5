@@ -18,6 +18,7 @@ class SymbolTableManager
 {
     std::stack<std::shared_ptr<SymbolTable>> _symbolTableStack;
     std::stack<int> _offsetStack;
+    std::string stackPointer;
 
     bool areSameParams(const std::vector<Type_>& actual, const std::vector<Type_>& expected);
     void outputFunctionParamsInScope();
@@ -38,6 +39,7 @@ public:
     Type_ doesFunctionExist(const std::string& functionName, const std::vector<Type_> params);
     Type_ getFunctionReturnType(const std::string& functionName);
     Type_ getVarType(const std::string& name);
+    int getVarOffset(const std::string& name);
     /// gets the register name that is assigned to the variable.
     std::string getVarRegister(const std::string& var_name);
     ///Assigns a register to a variable.
@@ -46,6 +48,7 @@ public:
     Type_ getCurrentScopeFunctionReturnType();
     bool isWhileScoped();
     std::vector<std::string> getParamList(const std::string& functionName);
+    std::string getStackPointer();
     static std::string ConvertTypeToString(Type_ type);
 };
 

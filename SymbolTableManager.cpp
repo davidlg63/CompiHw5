@@ -292,6 +292,25 @@ void SymbolTableManager::assignRegisterToVar(const std::string& var_name, const 
     }
 }
 
+int SymbolTableManager::getVarOffset(const string& name) {
+    std::shared_ptr<SymbolTable> currentTable = this->top();
+    while (nullptr != currentTable)
+    {
+        for(const SymbolTableEntry& entry : currentTable->table)
+        {
+            if(false == entry.isFunction && entry.name == name)
+            {
+                return entry.offset;
+            }
+        }
+        currentTable = currentTable->parent;
+    }
+}
+
+std::string SymbolTableManager::getStackPointer() {
+    return stackPointer;
+}
+
 
 
 

@@ -83,10 +83,48 @@ using namespace std;
 	
 	FuncDeclaration: retType ID LPAREN Formals RPAREN 												{
 																										checkIfMainRedefined(dynamic_cast<Id*>($2)->name);
-																										checkIfDoubleDeclare(dynamic_cast<Id*>($2)->name, dynamic_cast<paramList*>($4)->names_in_list);
+																										checkIfDoubleDeclare(dynamic_cast<Id*>($2)->name, 
+																										dynamic_cast<paramList*>($4)->names_in_list);
 																								
-																										symbolTableManager.top()->InsertFunction(dynamic_cast<Id*>($2)->name, dynamic_cast<retType*>($1)->type, 0, dynamic_cast<paramList*>($4)->types_in_list, dynamic_cast<paramList*>($4)->names_in_list);
-																										delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<paramList*>($4);
+																										symbolTableManager.top()->InsertFunction(dynamic_cast<Id*>($2)->name,
+																										dynamic_cast<retType*>($1)->type, 0, 
+																										dynamic_cast<paramList*>($4)->types_in_list, dynamic_cast<paramList*>($4)->names_in_list);
+																										
+																										$$ = new call2Fun();
+																										dynamic_cast<call2Fun*>($$)->name = dynamic_cast<Id*>($2)->name;
+																										dynamic_cast<call2Fun*>($$)->retType = dynamic_cast<retType*>($1)->type;
+																										dynamic_cast<call2Fun*>($$)->expList = dynamic_cast<paramList*>($4)->types_in_list;
+																										
+																										string sType = symbolTableManager.ConvertTypeToString(dynamic_cast<call2Fun*>($$)->retType);
+																										int paramsListSize = dynamic_cast<call2Fun*>($$)->expList->names_in_list.size();
+																										string sParams = "(";
+																										for (inti i=0; i<paramsListSize; i++)
+																										{
+																											sParams += "i32, ";
+																										}
+																										sParams += ")";
+																										string code = "define" + sType + "@" + dynamic_cast<call2Fun*>($$)->name + sParams;
+																										for (int i=0; i<paramsListSize; i++)
+																										{
+																											string reg = RegisterGenerator::getRegister();
+																											symbolTableManager.assignRegisterToVar(dynamic_cast<call2Fun*>($$)->expList[i], reg);
+																											string allocationCommand = reg + " = aloca i32";
+																											codeBuff.emit(allocationCommand);
+																										}
+																										for (int i=0; i<paramsListSize; i++)
+																										{
+																											string storeCommand - "store i32 %" + itoa(i) + " ,i32* " + symbolTableManager.getVarRegister(dynamic_cast<call2Fun*>($$)->expList[i]);
+																											codeBuff.emit(storeCommand);
+																										}
+																										string stackVar = RegisterGenerator::getRegister() + "sp";
+																										string stackPointer = symbolTableManager.getStackPointer();
+																										stackPointer = stackVar;
+																										code = stackVar + " = alloca [50 x i32]";
+																										CodeBuffer::instance().emit(code);
+																										
+																										
+																										delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); 
+																										delete dynamic_cast<paramList*>($4);
 																									};
 	FuncBody: LBRACE Statements RBRACE 																{};
 
@@ -141,10 +179,27 @@ using namespace std;
 
 	Statement:
 				LBRACE {symbolTableManager.openScope();} Statements RBRACE	{symbolTableManager.closeScope();} |
+				
 				Type ID SC	                                    {
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
+																	
+																	$$ = new Statement();
+																	int offset = symbolTableManager.getVarOffset(dynamic_cast<Id*>($2)->name);
+																	if(offset >= 0)
+																	{
+																		string reg = RegisterGenerator::getRegister()
+																		string regPtr = "%t"+ reg;
+																		string code = regPtr + " = getelementptr [50 x i32], [50 x i32]* " + symbolTableManager.getStackPointer + ", i32 0 , i32 " + stoi(offset);
+																		CodeBuffer::instance().emot(code);
+																		symbolTableManager.assignRegisterToVar(dynamic_cast<Id*>($2)->name, reg);
+																		code = "store i32 0, i32* " + regPtr;
+																		CodeBuffer::instance().emot(code);
+																	}
+																	
+																	delete dynamic_cast<Id*>($2);
 																	delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2);
 																} |
+																
 				Type ID ASSIGN Exp SC	                        { 
 																	CheckType(dynamic_cast<retType*>($1)->type, dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
@@ -283,7 +338,10 @@ using namespace std;
 																	$$ = new retType();
 																	Type_ type = symbolTableManager.getVarType(dynamic_cast<Id*>($1)->name);
 																	if(type == Type_::TYPE_NOT_VALID || (symbolTableManager.isFunction(dynamic_cast<Id*>($1)->name)))
-																		{output::errorUndef(yylineno, dynamic_cast<Id*>($1)->name); exit(1);}
+																	{
+																		output::errorUndef(yylineno, dynamic_cast<Id*>($1)->name); 
+																		exit(1);
+																	}
 																
 																	string id_reg = symbolTableManager.getVarRegister(dynamic_cast<Id*>($1)->name);
 																	string result_register = RegisterGenerator::getRegister();
