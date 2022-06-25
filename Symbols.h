@@ -82,5 +82,12 @@ struct Label : public SymbolBase
     explicit Label(const std::string& lbl) : label(lbl){};
 };
 
+struct Statement : public SymbolBase
+{
+    std::vector<std::pair<int, BranchLabelIndex>> nextList;
+    std::vector<std::pair<int, BranchLabelIndex>> breakList;
+    std::vector<std::pair<int, BranchLabelIndex>> continueList;
+};
+
 
 #endif //HW3_OUTPUT_CPP_NONTERMINALS_H

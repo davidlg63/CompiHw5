@@ -172,13 +172,38 @@ using namespace std;
 	;
 
 
-    Statements: Statement	                                    {} |
-				Statements Statement	                        {}
+    Statements: Statement	                                    {
+																	$$ = new Statement();
+																	Statement* statement = dynamic_cast<Statement*>($1);
+																	$$->nextList = statement->nextList;
+																	$$->breakList = statement->breakList;
+																	$$->continueList = statement->continueList;
+																	delete statement;
+																} |
+				Statements M_INSTR  Statement	                { //BUG: maybe here
+																	$$ = new Statement();
+																	Statement* last = dynamic_cast<Statement*>($3);
+																	Statement* rest = dynamic_cast<Statement*>($1);
+																	codeBuff.bpatch(rest->nextList, dynamic_cast<Label*>($2)->label);
+																	$$->nextList = last->nextList;
+																	$$->breakList = codeBuff.merge(rest->breakList, last->breakList);
+																	$$->continueList = codeBuff.merge(rest->continueList, last->continueList);
+																	delete last;
+																	delete rest;
+																}
 				;
 
 
 	Statement:
-				LBRACE {symbolTableManager.openScope();} Statements RBRACE	{symbolTableManager.closeScope();} |
+				LBRACE {symbolTableManager.openScope();} Statements RBRACE	{
+																				$$ = new Statement();
+																				Statement* inner = dynamic_cast<Statement*>($3);
+																				$$->nextList = inner->nextList;
+																				$$->breakList = inner->breakList;
+																				$$->continueList = inner->continueList;
+																				symbolTableManager.closeScope();
+																				delete inner;
+																			} |
 				
 				Type ID SC	                                    {
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
@@ -190,10 +215,10 @@ using namespace std;
 																		string reg = RegisterGenerator::getRegister()
 																		string regPtr = "%t"+ reg;
 																		string code = regPtr + " = getelementptr [50 x i32], [50 x i32]* " + symbolTableManager.getStackPointer + ", i32 0 , i32 " + stoi(offset);
-																		CodeBuffer::instance().emot(code);
+																		CodeBuffer::instance().emit(code);
 																		symbolTableManager.assignRegisterToVar(dynamic_cast<Id*>($2)->name, reg);
 																		code = "store i32 0, i32* " + regPtr;
-																		CodeBuffer::instance().emot(code);
+																		CodeBuffer::instance().emit(code);
 																	}
 																	
 																	delete dynamic_cast<Id*>($2);
@@ -239,9 +264,64 @@ using namespace std;
 																			symbolTableManager.closeScope();
 																	} |
 				IF LPAREN Bool_Exp RPAREN  Statement ELSE {symbolTableManager.closeScope(); symbolTableManager.openScope();} Statement CLOSE_SCOPE							{} |
-				WHILE LPAREN Exp RPAREN {symbolTableManager.openWhileScope(); CheckType(dynamic_cast<retType*>($3)->type, Type_::TYPE_BOOL);} Statement CLOSE_SCOPE	            																{delete dynamic_cast<retType*>($3);} |
-				BREAK SC	                                    																																												{if (!(symbolTableManager.isWhileScoped())){output::errorUnexpectedBreak(yylineno); exit(1);}} |
-				CONTINUE SC	                                    																																												{if (!symbolTableManager.isWhileScoped()) {output::errorUnexpectedContinue(yylineno); exit(1);}}
+				
+				WHILE M_INSTR LPAREN Exp RPAREN M_INSTR {
+											symbolTableManager.openWhileScope(); 
+											retType* exp = dynamic_cast<retType*>($4);
+											CheckType(exp->type, Type_::TYPE_BOOL);
+											string freshReg = RegisterGenerator::getRegister();
+											string check_if_exp_false = freshReg + " = icmp eq i32 0, " + exp->reg;
+											codeBuff.emit(check_if_exp_false);
+											string branch_code = "br i1 " + freshReg + ", label @, label @";
+											int branch_line = codeBuff.emit(branch_code);
+											exp->trueList = codeBuff.makeList(branch_line, FIRST);
+											exp->falseList = codeBuff.makeList(branch_line, SECOND);
+										} 
+										Statement CLOSE_SCOPE	       						
+																{
+																	Statement* statement = dynamic_cast<Statement*>($8);
+																	retType* exp = dynamic_cast<retType*>($4);
+																	Statement* while_statement = dynamic_cast<Statement*>($$);
+																	std::string exp_label = dynamic_cast<Label*>($2)->label;
+																	std::string statement_label = dynamic_cast<Label*>($6)->label;
+																	codeBuff.bpatch(exp->trueList, statement_label);
+																	codeBuff.bpatch(statement->nextList, exp_label);
+																	codeBuff.bpatch(statement->continueList, exp_label);
+																	while_statement->nextList = codeBuff.merge(exp->falseList, statement->breakList);
+																	codeBuff.emit("br label " + exp_label);
+																	
+																	delete exp;
+																	delete statement;
+																} |
+				
+				BREAK SC	   
+																																														{
+																																															if (!(symbolTableManager.isWhileScoped()))
+																																															{
+																																																output::errorUnexpectedBreak(yylineno);
+																																																exit(1);
+																																															}
+																																															Statement* breakStatement = dynamic_cast<Statement*>($1);
+																																															string next_line = codeBuff.emit("br label @");
+																																															breakStatement->nextList = codeBuff.makelist(next_line, BranchLabelIndex::FIRST);
+																																															$$ = new Statement();
+																																															$$->breakList = breakStatement->nextList;
+																																															delete breakStatement;
+																																														} |
+																																														
+				CONTINUE SC	                                    																														{
+																																															if (!symbolTableManager.isWhileScoped()) 
+																																															{
+																																																output::errorUnexpectedContinue(yylineno); 
+																																																exit(1);
+																																															}
+																																															Statement* contStatement = dynamic_cast<Statement*>($1);
+																																															string next_line = codeBuff.emit("br label @");
+																																															breakStatement->nextList = codeBuff.makelist(next_line, BranchLabelIndex::FIRST);
+																																															$$ = new Statement();
+																																															$$->continueList = contStatement->nextList;
+																																															delete contStatement;
+																																														}
 				;
 				
     Call: ID LPAREN ExpList RPAREN	                            {
