@@ -260,10 +260,47 @@ using namespace std;
 																		{output::errorMismatch(yylineno); exit(1);} 
 																	delete dynamic_cast<retType*>($2);
 																}  |
-				IF LPAREN Bool_Exp RPAREN  Statement                {
-																			symbolTableManager.closeScope();
+																
+				IF LPAREN Bool_Exp RPAREN M_INSTR Statement         {
+																		$$ = new Statement();
+																		Label* statement_label = dynamic_cast<Label*>($5);
+																		Statement* exp = dynamic_cast<Statement*>($3);
+																		Statement* statement = dynamic_cast<Statement*>($6);
+																		codeBuff.bpatch(exp->trueList, statement_label);
+																		$$->nextList = codeBuff.merge(exp->falseList, statement->nextList);
+																		$$->breakList = statement->breakList;
+																		$$->continueList = statement->continueList;
+																		symbolTableManager.closeScope();
+																		
+																		delete statement_label;
+																		delete exp;
+																		delete statement;
 																	} |
-				IF LPAREN Bool_Exp RPAREN  Statement ELSE {symbolTableManager.closeScope(); symbolTableManager.openScope();} Statement CLOSE_SCOPE							{} |
+																	
+																	
+				IF LPAREN Bool_Exp RPAREN M_INSTR Statement M_JUMP ELSE {symbolTableManager.closeScope(); symbolTableManager.openScope();} M_INSTR Statement CLOSE_SCOPE	{
+																																												$$ = new Statement();
+																																												Label* if_body_label = dynamic_cast<Label*>($5);
+																																												Label* else_label = dynamic_cast<Label*>($10);
+																																												Statement* exp = dynamic_cast<Statement*>($3);
+																																												Statement* if_statement = dynamic_cast<Statement*>($6);
+																																												Statement* else_statement = dynamic_cast<Statement*>($11);
+																																												JumpMarker* jump_over_else = dynamic_cast<JumpMarker*>($7);
+																																												codeBuff.bpatch(exp->trueList, if_body_label);
+																																												codeBuff.bpatch(exp->falseList, else_label);
+																																												auto tmpList = codeBuff.merge(if_statement->nextList, jump_over_else->nextList);
+																																												$$->nextList = codeBuff.merge(tmpList, else_statement->nextList);
+																																												$$->breakList = codeBuff.merge(if_statement->breakList, else_statement->breakList);
+																																												$$->continueList = codeBuff.merge(if_statement->continueList, else_statement->continueList);
+																																												symbolTableManager.closeScope();
+																																												
+																																												delete if_body_label;
+																																												delete else_label;
+																																												delete exp;
+																																												delete if_statement;
+																																												delete else_statement;
+																																												delete jump_over_else;
+																																											} |
 				
 				WHILE M_INSTR LPAREN Exp RPAREN M_INSTR {
 											symbolTableManager.openWhileScope(); 
@@ -675,8 +712,24 @@ using namespace std;
 	;
 	
 	CLOSE_SCOPE: {symbolTableManager.closeScope();};
-	Bool_Exp: Exp {CheckType(dynamic_cast<retType*>($1)->type, Type_::TYPE_BOOL); delete dynamic_cast<retType*>($1); symbolTableManager.openScope();};
+	Bool_Exp: Exp 	{
+						retType* exp = dynamic_cast<retType*>($1);
+						CheckType(exp->type, Type_::TYPE_BOOL);
+						//BUG: maybe here.
+						int branch_line = codeBuff.emit("br i1 " + exp->reg + ", label @, label @");
+						exp->trueList = codeBuff.makeList(branch_line, FIRST);
+						exp->falseList = codeBuff.makeList(branch_line, SECOND);
+						$$ = $1;
+						symbolTableManager.openScope();
+					};
+					
 	M_INSTR : {$$ = new Label(codeBuff.genLabel());};
+	
+	M_JUMP: {
+				$$ = new JumpMarker();
+				int line = codeBuff.emit("br label @");
+				$$->nextList = codeBuff.makeList(line, FIRST);
+			};
 
 %%
 

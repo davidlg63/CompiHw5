@@ -89,5 +89,10 @@ struct Statement : public SymbolBase
     std::vector<std::pair<int, BranchLabelIndex>> continueList;
 };
 
+struct JumpMarker : public SymbolBase
+{
+    std::vector<std::pair<int, BranchLabelIndex>> nextList;
+};
+
 
 #endif //HW3_OUTPUT_CPP_NONTERMINALS_H
