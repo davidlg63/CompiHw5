@@ -45,7 +45,8 @@ struct expressionList : public SymbolBase
     std::vector<Type_> exprList;
     std::vector<std::string> registersList;
     expressionList() = default;
-    void insertElement(const Type_ expType, const std::string& reg);
+    void insertElement(const Type_ expType);
+    void insertRegister(const std::string& reg);
 };
 
 
@@ -94,6 +95,12 @@ struct Statement : public SymbolBase
 struct JumpMarker : public SymbolBase
 {
     std::vector<std::pair<int, BranchLabelIndex>> nextList;
+};
+
+struct String : public SymbolBase
+{
+    std::string value;
+    explicit String(const char* val) : value(val){};
 };
 
 

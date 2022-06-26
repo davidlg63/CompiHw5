@@ -35,6 +35,8 @@ public:
     static void generateCallToFuncWithoutArguments(call2Fun* func);
 
     static void generateCallToFuncWithArguments(call2Fun* func, const expressionList* params);
+
+    static void generateStringCode(retType* result_exp, const String* str);
 };
 
 

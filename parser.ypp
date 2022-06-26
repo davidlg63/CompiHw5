@@ -398,13 +398,18 @@ using namespace std;
 		  ;
     ExpList: Exp	                                            {
 																	$$ = new expressionList(); 
-																	dynamic_cast<expressionList*>($$)->exprList = std::vector<Type_>(1,dynamic_cast<retType*>($1)->type);
-																	delete dynamic_cast<retType*>($1);
+																	retType* exp = dynamic_cast<retType*>($1);
+																	$$->exprList = std::vector<Type_>(1, exp->type);
+																	$$->registersList = std::vector<std::string>(1, exp->reg);
+																	delete exp;
 																} |
 		   	 Exp COMMA ExpList	                                {
 																	$$ = new expressionList();
-																	dynamic_cast<expressionList*>($$)->exprList = dynamic_cast<expressionList*>($3)->exprList;
-																	dynamic_cast<expressionList*>($$)->insertElement(dynamic_cast<retType*>($1)->type);
+																	$$->exprList = dynamic_cast<expressionList*>($3)->exprList;
+																	$$->insertElement(dynamic_cast<retType*>($1)->type);
+																	$$->registersList = dynamic_cast<expressionList*>($3)->registersList;
+																	$$->insertRegister(dynamic_cast<retType*>($1)->reg);
+																	delete dynamic_cast<retType*>($1);
 																	delete dynamic_cast<expressionList*>($3);
 																}
 			 ;
@@ -487,8 +492,12 @@ using namespace std;
 																	CodeBuffer::instance().emit(code);
 																	delete dynamic_cast<Id*>($1);
 																} |
-         Call        	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = dynamic_cast<call2Fun*>($1)->type;
-                                                                delete dynamic_cast<call2Fun*>($1);} |
+         Call        	                                        {
+																	$$ = new retType();
+																	dynamic_cast<retType*>($$)->type = dynamic_cast<call2Fun*>($1)->type;
+																	dynamic_cast<retType*>($$)->reg = dynamic_cast<call2Fun*>($1)->reg;
+																	delete dynamic_cast<call2Fun*>($1);
+																} |
 
          NUM         	                                        {
 																	$$ = new retType();
@@ -514,7 +523,12 @@ using namespace std;
 																	CodeGenerator::generateIntByteCreationCode(reg, num->value);
 																	delete num;
 																} |
-         STRING      	                                        {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_STRING ;} |
+         STRING      	                                        {
+																	$$ = new retType();
+																	dynamic_cast<retType*>($$)->type = Type_::TYPE_STRING;
+																	CodeGenerator::generateStringCode($$, dynamic_cast<String*>($1));
+																	delete dynamic_cast<String*>($1);
+																} |
 		 
          TRUE        	                                        {
 																	$$ = new retType();

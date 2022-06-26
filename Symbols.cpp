@@ -3,7 +3,10 @@
 //
 #include "Symbols.h"
 
-void expressionList::insertElement(const Type_ expType, const std::string& reg) {
+void expressionList::insertElement(const Type_ expType) {
         exprList.insert(exprList.begin(), expType);
-        registersList.insert(registersList.begin(), reg);
+}
+
+void expressionList::insertRegister(const string& reg) {
+    registersList.insert(registersList.begin(), reg);
 }

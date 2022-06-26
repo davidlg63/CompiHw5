@@ -213,3 +213,13 @@ void CodeGenerator::generateCallToFuncWithArguments(call2Fun *func, const expres
     CodeBuffer::instance().emit(code);
 }
 
+void CodeGenerator::generateStringCode(retType *result, const String* str) {
+    string tmp = str->value.substr(1, str->value.size() - 2);
+    string reg = RegisterGenerator::getRegister();
+    string code = "@" + reg + " = constant [" + to_string(tmp.size() + 1) + " x i8] c\"" + tmp + "\\00\"";
+    CodeBuffer::instance().emitGlobal(code);
+    string size = to_string(tmp.size() + 1);
+    code =  reg + " = getelementptr [" + size + "x i8], [" + size +" x i8]* @" + reg + ", i32 0, i32 0";
+    CodeBuffer::instance().emit(code);
+}
+

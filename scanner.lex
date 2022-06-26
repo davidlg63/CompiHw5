@@ -50,7 +50,7 @@ continue							return CONTINUE;
 [a-zA-Z][a-zA-Z0-9]*				{yylval = new Id(yytext); return ID;};
 ;									return SC;
 0|[1-9]([0-9])*						{yylval = new Num(yytext); return NUM;};
-\"([^\n\r\"\\]|\\[rnt"\\])+\"		return STRING;
+\"([^\n\r\"\\]|\\[rnt"\\])+\"		{yylval = new String(yytext); return STRING;};
 \/\/[^\r\n]*[\r|\n|\r\n]?			;
 [\r\n\t ]+							;
 .									lexicalError();
