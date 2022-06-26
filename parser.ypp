@@ -254,11 +254,25 @@ using namespace std;
 																	delete dynamic_cast<call2Fun*>($1);
 																} |
 				RETURN SC	                                    {
-																	if(symbolTableManager.getCurrentScopeFunctionReturnType() != Type_::TYPE_VOID){output::errorMismatch(yylineno); exit(1);}} |
+																	if(symbolTableManager.getCurrentScopeFunctionReturnType() != Type_::TYPE_VOID)
+																	{
+																	output::errorMismatch(yylineno); 
+																	exit(1);
+																	}
+																	codeBuff.emit("ret void");
+																} |
+																
 				RETURN Exp SC	                                {
-																	if(isRetTypeMismatch(dynamic_cast<retType*>($2)->type))
-																		{output::errorMismatch(yylineno); exit(1);} 
-																	delete dynamic_cast<retType*>($2);
+																	//BUG: maybe here
+																	retType* exp = dynamic_cast<retType*>($2);
+																	if(isRetTypeMismatch(exp->type))
+																	{
+																		output::errorMismatch(yylineno); 
+																		exit(1);
+																	} 
+																	std::string exp_type = symbolTableManager.ConvertTypeToString(exp->type);
+																	codeBuff.emit("ret " + exp_type + " " + exp->reg);
+																	delete exp;
 																}  |
 																
 				IF LPAREN Bool_Exp RPAREN M_INSTR Statement         {
