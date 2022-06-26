@@ -36,14 +36,16 @@ struct call2Fun : public SymbolBase
     std::string name;
     Type_ type;
     std::vector<Type_> expList;
+    std::string reg;
     call2Fun() = default;
 };
 
 struct expressionList : public SymbolBase
 {
     std::vector<Type_> exprList;
+    std::vector<std::string> registersList;
     expressionList() = default;
-    void insertElement(const Type_ expType);
+    void insertElement(const Type_ expType, const std::string& reg);
 };
 
 

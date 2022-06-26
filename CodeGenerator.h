@@ -31,6 +31,10 @@ public:
     static void generateStandardLibraryFunctionsDeclaration();
 
     static void generatePrintFunctions();
+
+    static void generateCallToFuncWithoutArguments(call2Fun* func);
+
+    static void generateCallToFuncWithArguments(call2Fun* func, const expressionList* params);
 };
 
 

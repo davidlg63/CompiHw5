@@ -1,6 +1,8 @@
 
 
 #include "CodeGenerator.h"
+#include "Symbols.h"
+#include "SymbolTableManager.h"
 using namespace std;
 
 
@@ -173,5 +175,41 @@ void CodeGenerator::generatePrintFunctions() {
     codeBuffer.emit(R"(@.str_specifier = constant [4 x i8] c"%s\0A\00")");
     codeBuffer.emit(printi_code);
     codeBuffer.emit(print_code);
+}
+
+void CodeGenerator::generateCallToFuncWithoutArguments(call2Fun* func) {
+     string func_type = SymbolTableManager::ConvertTypeToString(func->type);
+     string result_reg = RegisterGenerator::getRegister();
+     func->reg = result_reg;
+     string code = result_reg + " = " + "call " + func_type + " @" + func->name + "()";
+     CodeBuffer::instance().emit(code);
+}
+
+void CodeGenerator::generateCallToFuncWithArguments(call2Fun *func, const expressionList *params) {
+    string func_type = SymbolTableManager::ConvertTypeToString(func->type);
+    string code;
+    if (TYPE_VOID != func->type)
+    {
+        string result_reg = RegisterGenerator::getRegister();
+        code += result_reg + " = ";
+        func->reg = result_reg;
+    }
+    code += "call " + func_type + " @" + func->name +"(";
+    if("print" == func->name) //print is a special function that accepts and i8* this is why we need to address it seperatly.
+    {
+        code += "i8* " + params->registersList[0];
+    }
+    else {
+        /*Insert the params*/
+        for (int i = 0; i < params->registersList.size(); i++) {
+            code += "i32 " + params->registersList[i];
+            if(i < params->registersList.size() - 1)
+            {
+                code += ", ";
+            }
+        }
+    }
+    code += ")"; //Any way we need to close the brackets of the params.
+    CodeBuffer::instance().emit(code);
 }
 

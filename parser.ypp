@@ -251,7 +251,9 @@ using namespace std;
 																	delete dynamic_cast<Id*>($1);delete dynamic_cast<retType*>($3);
 																} |
 				Call SC	                                        {
-																	delete dynamic_cast<call2Fun*>($1);
+																	call2Fun* func_call = dynamic_cast<call2Fun*>($1);
+																	
+																	delete func_call;
 																} |
 				RETURN SC	                                    {
 																	if(symbolTableManager.getCurrentScopeFunctionReturnType() != Type_::TYPE_VOID)
@@ -376,7 +378,8 @@ using namespace std;
 				;
 				
     Call: ID LPAREN ExpList RPAREN	                            {
-																	$$ = new call2Fun(); checkIfFuncExist(dynamic_cast<Id*>($1)->name,dynamic_cast<expressionList*>($3)->exprList);
+																	$$ = new call2Fun();
+																	checkIfFuncExist(dynamic_cast<Id*>($1)->name,dynamic_cast<expressionList*>($3)->exprList);
 																	dynamic_cast<call2Fun*>($$)->name = dynamic_cast<Id*>($1)->name;
 																	dynamic_cast<call2Fun*>($$)->expList = dynamic_cast<expressionList*>($3)->exprList;
 																	dynamic_cast<call2Fun*>($$)->type = symbolTableManager.getFunctionReturnType(dynamic_cast<Id*>($1)->name);
@@ -388,6 +391,8 @@ using namespace std;
 																	dynamic_cast<call2Fun*>($$)->name = dynamic_cast<Id*>($1)->name;
 																	dynamic_cast<call2Fun*>($$)->expList = std::vector<Type_>();
 																	dynamic_cast<call2Fun*>($$)->type = symbolTableManager.getFunctionReturnType(dynamic_cast<Id*>($1)->name);
+																	
+																	CodeGenerator::generateCallToFuncWithoutArguments($$);
 																	delete dynamic_cast<Id*>($1);
 																}
 		  ;
