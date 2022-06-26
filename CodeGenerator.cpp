@@ -152,7 +152,7 @@ void CodeGenerator::generateBoolNot(const string &resultReg, const string &expre
 }
 
 void CodeGenerator::generateStandardLibraryFunctionsDeclaration() {
-    CodeBuffer::instance().emit("declare i32 @printfi(i8*, ...)");
+    CodeBuffer::instance().emit("declare i32 @printf(i8*, ...)");
     CodeBuffer::instance().emit("declare void @exit(i32)");
 }
 
