@@ -29,6 +29,8 @@ public:
     static void generateBoolNot(const std::string& resultReg, const std::string& expressionReg);
 
     static void generateStandardLibraryFunctionsDeclaration();
+
+    static void generatePrintFunctions();
 };
 
 
