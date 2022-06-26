@@ -66,12 +66,12 @@ using namespace std;
 %left RBRACE
 %right ELSE
 %%
-    Program: {symbolTableManager.openScope(); InsertPrintFunctions();} Funcs	                                            {
-																																
-																																if(Type_::TYPE_VOID != symbolTableManager.doesFunctionExist("main", vector<Type_>())) 
-																																	{output::errorMainMissing(); exit(1);}
-																																symbolTableManager.closeScope();
-																															}
+    Program: {symbolTableManager.openScope(); InsertPrintFunctions(); CodeGenerator::generateStandardLibraryFunctionsDeclaration();} Funcs	        {
+																																	
+																																						if(Type_::TYPE_VOID != symbolTableManager.doesFunctionExist("main", vector<Type_>())) 
+																																							{output::errorMainMissing(); exit(1);}
+																																						symbolTableManager.closeScope();
+																																					}
             ;
 
     Funcs:                   	                                {}
