@@ -792,7 +792,7 @@ using namespace std;
 
 int main()
 {
-    int res = yyparse();
+    return yyparse();
 }
 
 void yyerror(const char* message)
