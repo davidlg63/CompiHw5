@@ -18,6 +18,7 @@
     RegisterGenerator& operator=(const RegisterGenerator&) = delete;
     static RegisterGenerator& Get();
     static std::string getRegister();
+    static std::string getRawRegister(std::string& str);
 };
 
 #endif //HW5_REGISTERGENERATOR_H

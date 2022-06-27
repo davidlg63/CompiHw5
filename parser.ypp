@@ -71,6 +71,8 @@ using namespace std;
 																																											
 																																																if(Type_::TYPE_VOID != symbolTableManager.doesFunctionExist("main", vector<Type_>())) 
 																																																	{output::errorMainMissing(); exit(1);}
+																																																codeBuff.printGlobalBuffer();
+																																																codeBuff.printCodeBuffer();
 																																																symbolTableManager.closeScope();
 																																															}
             ;
@@ -790,7 +792,7 @@ using namespace std;
 
 int main()
 {
-    return yyparse();
+    int res = yyparse();
 }
 
 void yyerror(const char* message)

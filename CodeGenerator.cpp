@@ -217,6 +217,7 @@ void CodeGenerator::generateCallToFuncWithArguments(call2Fun *func, const expres
 void CodeGenerator::generateStringCode(retType *result, const String* str) {
     string tmp = str->value.substr(1, str->value.size() - 2);
     string reg = RegisterGenerator::getRegister();
+    reg = RegisterGenerator::getRawRegister(reg);
     string code = "@" + reg + " = constant [" + to_string(tmp.size() + 1) + " x i8] c\"" + tmp + "\\00\"";
     CodeBuffer::instance().emitGlobal(code);
     string size = to_string(tmp.size() + 1);
