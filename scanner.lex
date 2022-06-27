@@ -42,7 +42,7 @@ continue							return CONTINUE;
 \<=									return RELOP_LEQ;
 \>=									return RELOP_GEQ;
 ==									return RELOP_EQ;
-!=									return RELOP_NOTEQ
+!=									return RELOP_NOTEQ;
 \+									return BINOP_PLUS;
 \-									return BINOP_MINUS;
 \*									return BINOP_MUL;

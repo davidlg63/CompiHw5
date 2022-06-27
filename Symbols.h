@@ -61,7 +61,7 @@ struct retType : public SymbolBase
 {
     Type_ type;
     std::string reg;
-    std::vector<std::pair<int, BranchLabelIndex>> trueLise;
+    std::vector<std::pair<int, BranchLabelIndex>> trueList;
     std::vector<std::pair<int, BranchLabelIndex>> falseList;
     retType()= default;
 };
@@ -85,7 +85,7 @@ struct Label : public SymbolBase
     explicit Label(const std::string& lbl) : label(lbl){};
 };
 
-struct Statement : public SymbolBase
+struct StatementNode : public SymbolBase
 {
     std::vector<std::pair<int, BranchLabelIndex>> nextList;
     std::vector<std::pair<int, BranchLabelIndex>> breakList;

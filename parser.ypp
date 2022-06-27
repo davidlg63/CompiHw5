@@ -1,8 +1,9 @@
 %{
 #include <iostream>
-#include "hw3_output.hpp"
+#include <stdlib.h>
 #include "SymbolTableManager.h"
 #include "CodeGenerator.h"
+#include "hw3_output.hpp"
 
 
 int yylex();
@@ -82,38 +83,41 @@ using namespace std;
     FuncDecl: {symbolTableManager.openFuncScope();} FuncDeclaration FuncBody CLOSE_SCOPE	{};
 	
 	FuncDeclaration: retType ID LPAREN Formals RPAREN 												{
-																										checkIfMainRedefined(dynamic_cast<Id*>($2)->name);
-																										checkIfDoubleDeclare(dynamic_cast<Id*>($2)->name, 
-																										dynamic_cast<paramList*>($4)->names_in_list);
+																										retType* returnType = dynamic_cast<retType*>($1);
+																										Id* id = dynamic_cast<Id*>($2);
+																										paramList* params = dynamic_cast<paramList*>($4);
+																										checkIfMainRedefined(id->name);
+																										checkIfDoubleDeclare(id->name, params->names_in_list);
 																								
-																										symbolTableManager.top()->InsertFunction(dynamic_cast<Id*>($2)->name,
-																										dynamic_cast<retType*>($1)->type, 0, 
-																										dynamic_cast<paramList*>($4)->types_in_list, dynamic_cast<paramList*>($4)->names_in_list);
+																										symbolTableManager.top()->InsertFunction(id->name, returnType->type, 0, params->types_in_list, params->names_in_list);
 																										
 																										$$ = new call2Fun();
-																										dynamic_cast<call2Fun*>($$)->name = dynamic_cast<Id*>($2)->name;
-																										dynamic_cast<call2Fun*>($$)->retType = dynamic_cast<retType*>($1)->type;
-																										dynamic_cast<call2Fun*>($$)->expList = dynamic_cast<paramList*>($4)->types_in_list;
+																										call2Fun* result = dynamic_cast<call2Fun*>($$);
+																										result->name = id->name;
+																										result->type = returnType->type;
+																										result->expList = params->types_in_list;
 																										
-																										string sType = symbolTableManager.ConvertTypeToString(dynamic_cast<call2Fun*>($$)->retType);
-																										int paramsListSize = dynamic_cast<call2Fun*>($$)->expList->names_in_list.size();
+																										string sType = symbolTableManager.ConvertTypeToString(result->type);
+																										int paramsListSize = params->names_in_list.size();
 																										string sParams = "(";
-																										for (inti i=0; i<paramsListSize; i++)
+																										for (int i=0; i < paramsListSize; i++)
 																										{
 																											sParams += "i32, ";
 																										}
 																										sParams += ")";
-																										string code = "define" + sType + "@" + dynamic_cast<call2Fun*>($$)->name + sParams;
-																										for (int i=0; i<paramsListSize; i++)
+																										string code = "define" + sType + "@" + result->name + sParams;
+																										for (int i=0; i < paramsListSize; i++)
 																										{
 																											string reg = RegisterGenerator::getRegister();
-																											symbolTableManager.assignRegisterToVar(dynamic_cast<call2Fun*>($$)->expList[i], reg);
+																											string type = SymbolTableManager::ConvertTypeToString(params->types_in_list[i]);
+																											symbolTableManager.assignRegisterToVar(type, reg);
 																											string allocationCommand = reg + " = aloca i32";
 																											codeBuff.emit(allocationCommand);
 																										}
-																										for (int i=0; i<paramsListSize; i++)
+																										for (int i=0; i < paramsListSize; i++)
 																										{
-																											string storeCommand - "store i32 %" + itoa(i) + " ,i32* " + symbolTableManager.getVarRegister(dynamic_cast<call2Fun*>($$)->expList[i]);
+																											string var = params->names_in_list[i];
+																											string storeCommand = "store i32 %" + to_string(i) + " ,i32* " + symbolTableManager.getVarRegister(var);
 																											codeBuff.emit(storeCommand);
 																										}
 																										string stackVar = RegisterGenerator::getRegister() + "sp";
@@ -121,8 +125,6 @@ using namespace std;
 																										stackPointer = stackVar;
 																										code = stackVar + " = alloca [50 x i32]";
 																										CodeBuffer::instance().emit(code);
-																										
-																										
 																										delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); 
 																										delete dynamic_cast<paramList*>($4);
 																									};
@@ -173,21 +175,23 @@ using namespace std;
 
 
     Statements: Statement	                                    {
-																	$$ = new Statement();
-																	Statement* statement = dynamic_cast<Statement*>($1);
-																	$$->nextList = statement->nextList;
-																	$$->breakList = statement->breakList;
-																	$$->continueList = statement->continueList;
-																	delete statement;
+																	$$ = new StatementNode();
+																	StatementNode* s = dynamic_cast<StatementNode*>($1);
+																	StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
+																	resultStatement->nextList = s->nextList;
+																	resultStatement->breakList = s->breakList;
+																	resultStatement->continueList = s->continueList;
+																	delete s;
 																} |
 				Statements M_INSTR  Statement	                { //BUG: maybe here
-																	$$ = new Statement();
-																	Statement* last = dynamic_cast<Statement*>($3);
-																	Statement* rest = dynamic_cast<Statement*>($1);
+																	$$ = new StatementNode();
+																	StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
+																	StatementNode* last = dynamic_cast<StatementNode*>($3);
+																	StatementNode* rest = dynamic_cast<StatementNode*>($1);
 																	codeBuff.bpatch(rest->nextList, dynamic_cast<Label*>($2)->label);
-																	$$->nextList = last->nextList;
-																	$$->breakList = codeBuff.merge(rest->breakList, last->breakList);
-																	$$->continueList = codeBuff.merge(rest->continueList, last->continueList);
+																	resultStatement->nextList = last->nextList;
+																	resultStatement->breakList = codeBuff.merge(rest->breakList, last->breakList);
+																	resultStatement->continueList = codeBuff.merge(rest->continueList, last->continueList);
 																	delete last;
 																	delete rest;
 																}
@@ -196,11 +200,12 @@ using namespace std;
 
 	Statement:
 				LBRACE {symbolTableManager.openScope();} Statements RBRACE	{
-																				$$ = new Statement();
-																				Statement* inner = dynamic_cast<Statement*>($3);
-																				$$->nextList = inner->nextList;
-																				$$->breakList = inner->breakList;
-																				$$->continueList = inner->continueList;
+																				$$ = new StatementNode();
+																				StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
+																				StatementNode* inner = dynamic_cast<StatementNode*>($3);
+																				resultStatement->nextList = inner->nextList;
+																				resultStatement->breakList = inner->breakList;
+																				resultStatement->continueList = inner->continueList;
 																				symbolTableManager.closeScope();
 																				delete inner;
 																			} |
@@ -208,64 +213,68 @@ using namespace std;
 				Type ID SC	                                    {
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
 																	
-																	$$ = new Statement();
+																	$$ = new StatementNode();
 																	int offset = symbolTableManager.getVarOffset(dynamic_cast<Id*>($2)->name);
 																	if(offset >= 0)
 																	{
-																		string reg = RegisterGenerator::getRegister()
-																		string regPtr = "%t"+ reg;
-																		string code = regPtr + " = getelementptr [50 x i32], [50 x i32]* " + symbolTableManager.getStackPointer + ", i32 0 , i32 " + stoi(offset);
+																		string reg = RegisterGenerator::getRegister();
+																		string code = reg + " = getelementptr [50 x i32], [50 x i32]* " + symbolTableManager.getStackPointer() + ", i32 0 , i32 " + to_string(offset);
 																		CodeBuffer::instance().emit(code);
 																		symbolTableManager.assignRegisterToVar(dynamic_cast<Id*>($2)->name, reg);
-																		code = "store i32 0, i32* " + regPtr;
+																		code = "store i32 0, i32* " + reg;
 																		CodeBuffer::instance().emit(code);
 																	}
-																	
 																	delete dynamic_cast<Id*>($2);
-																	delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2);
+																	delete dynamic_cast<retType*>($1);
 																} |
 																
 				Type ID ASSIGN Exp SC	                        { 
+																	$$ = new StatementNode();
 																	CheckType(dynamic_cast<retType*>($1)->type, dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
 																	std::string freshReg = RegisterGenerator::getRegister();
 																	dynamic_cast<retType*>($4)->reg = freshReg;
-																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
+																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name);
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
 																} |
 				AUTO ID ASSIGN Exp SC	                        {
+																	$$ = new StatementNode();
 																	CheckIfValidTypeForVar(dynamic_cast<retType*>($4)->type);
 																	MakeDeclaration(dynamic_cast<retType*>($4)->type, dynamic_cast<Id*>($2)->name);
 																	std::string freshReg = RegisterGenerator::getRegister();
 																	dynamic_cast<retType*>($4)->reg = freshReg;
-																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
+																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name);
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<retType*>($4); delete dynamic_cast<Id*>($2);
 																} |
 				ID ASSIGN Exp SC                	            {
+																	$$ = new StatementNode();
 																	CheckIfAssignmentValid(dynamic_cast<Id*>($1)->name, dynamic_cast<retType*>($3)->type);
 																	string freshReg = RegisterGenerator::getRegister();
-																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name));
+																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name);
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete dynamic_cast<Id*>($1);delete dynamic_cast<retType*>($3);
 																} |
 				Call SC	                                        {
+																	$$ = new StatementNode();
 																	call2Fun* func_call = dynamic_cast<call2Fun*>($1);
 																	
 																	delete func_call;
 																} |
 				RETURN SC	                                    {
+																	$$ = new StatementNode();
 																	if(symbolTableManager.getCurrentScopeFunctionReturnType() != Type_::TYPE_VOID)
 																	{
-																	output::errorMismatch(yylineno); 
-																	exit(1);
+																		output::errorMismatch(yylineno); 
+																		exit(1);
 																	}
 																	codeBuff.emit("ret void");
 																} |
 																
 				RETURN Exp SC	                                {
 																	//BUG: maybe here
+																	$$ = new StatementNode();
 																	retType* exp = dynamic_cast<retType*>($2);
 																	if(isRetTypeMismatch(exp->type))
 																	{
@@ -278,14 +287,15 @@ using namespace std;
 																}  |
 																
 				IF LPAREN Bool_Exp RPAREN M_INSTR Statement         {
-																		$$ = new Statement();
+																		$$ = new StatementNode();
+																		StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
 																		Label* statement_label = dynamic_cast<Label*>($5);
-																		Statement* exp = dynamic_cast<Statement*>($3);
-																		Statement* statement = dynamic_cast<Statement*>($6);
-																		codeBuff.bpatch(exp->trueList, statement_label);
-																		$$->nextList = codeBuff.merge(exp->falseList, statement->nextList);
-																		$$->breakList = statement->breakList;
-																		$$->continueList = statement->continueList;
+																		retType* exp = dynamic_cast<retType*>($3);
+																		StatementNode* statement = dynamic_cast<StatementNode*>($6);
+																		codeBuff.bpatch(exp->trueList, statement_label->label);
+																		resultStatement->nextList = codeBuff.merge(exp->falseList, statement->nextList);
+																		resultStatement->breakList = statement->breakList;
+																		resultStatement->continueList = statement->continueList;
 																		symbolTableManager.closeScope();
 																		
 																		delete statement_label;
@@ -294,20 +304,21 @@ using namespace std;
 																	} |
 																	
 																	
-				IF LPAREN Bool_Exp RPAREN M_INSTR Statement M_JUMP ELSE {symbolTableManager.closeScope(); symbolTableManager.openScope();} M_INSTR Statement CLOSE_SCOPE	{
-																																												$$ = new Statement();
+				IF LPAREN Bool_Exp RPAREN M_INSTR Statement ELSE M_JUMP {symbolTableManager.closeScope(); symbolTableManager.openScope();} M_INSTR Statement CLOSE_SCOPE	{
+																																												$$ = new StatementNode();
+																																												StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
 																																												Label* if_body_label = dynamic_cast<Label*>($5);
 																																												Label* else_label = dynamic_cast<Label*>($10);
-																																												Statement* exp = dynamic_cast<Statement*>($3);
-																																												Statement* if_statement = dynamic_cast<Statement*>($6);
-																																												Statement* else_statement = dynamic_cast<Statement*>($11);
+																																												retType* exp = dynamic_cast<retType*>($3);
+																																												StatementNode* if_statement = dynamic_cast<StatementNode*>($6);
+																																												StatementNode* else_statement = dynamic_cast<StatementNode*>($11);
 																																												JumpMarker* jump_over_else = dynamic_cast<JumpMarker*>($7);
-																																												codeBuff.bpatch(exp->trueList, if_body_label);
-																																												codeBuff.bpatch(exp->falseList, else_label);
+																																												codeBuff.bpatch(exp->trueList, if_body_label->label);
+																																												codeBuff.bpatch(exp->falseList, else_label->label);
 																																												auto tmpList = codeBuff.merge(if_statement->nextList, jump_over_else->nextList);
-																																												$$->nextList = codeBuff.merge(tmpList, else_statement->nextList);
-																																												$$->breakList = codeBuff.merge(if_statement->breakList, else_statement->breakList);
-																																												$$->continueList = codeBuff.merge(if_statement->continueList, else_statement->continueList);
+																																												resultStatement->nextList = codeBuff.merge(tmpList, else_statement->nextList);
+																																												resultStatement->breakList = codeBuff.merge(if_statement->breakList, else_statement->breakList);
+																																												resultStatement->continueList = codeBuff.merge(if_statement->continueList, else_statement->continueList);
 																																												symbolTableManager.closeScope();
 																																												
 																																												delete if_body_label;
@@ -327,14 +338,15 @@ using namespace std;
 											codeBuff.emit(check_if_exp_false);
 											string branch_code = "br i1 " + freshReg + ", label @, label @";
 											int branch_line = codeBuff.emit(branch_code);
-											exp->trueList = codeBuff.makeList(branch_line, FIRST);
-											exp->falseList = codeBuff.makeList(branch_line, SECOND);
+											exp->trueList = codeBuff.makelist({branch_line, FIRST});
+											exp->falseList = codeBuff.makelist({branch_line, SECOND});
 										} 
 										Statement CLOSE_SCOPE	       						
 																{
-																	Statement* statement = dynamic_cast<Statement*>($8);
+																	$$ = new StatementNode();
+																	StatementNode* statement = dynamic_cast<StatementNode*>($8);
 																	retType* exp = dynamic_cast<retType*>($4);
-																	Statement* while_statement = dynamic_cast<Statement*>($$);
+																	StatementNode* while_statement = dynamic_cast<StatementNode*>($$);
 																	std::string exp_label = dynamic_cast<Label*>($2)->label;
 																	std::string statement_label = dynamic_cast<Label*>($6)->label;
 																	codeBuff.bpatch(exp->trueList, statement_label);
@@ -354,25 +366,24 @@ using namespace std;
 																																																output::errorUnexpectedBreak(yylineno);
 																																																exit(1);
 																																															}
-																																															Statement* breakStatement = dynamic_cast<Statement*>($1);
-																																															string next_line = codeBuff.emit("br label @");
-																																															breakStatement->nextList = codeBuff.makelist(next_line, BranchLabelIndex::FIRST);
-																																															$$ = new Statement();
-																																															$$->breakList = breakStatement->nextList;
+																																															StatementNode* breakStatement = dynamic_cast<StatementNode*>($1);
+																																															int next_line = codeBuff.emit("br label @");
+																																															breakStatement->nextList = codeBuff.makelist({next_line, FIRST});
+																																															$$ = new StatementNode();
+																																															dynamic_cast<StatementNode*>($$)->breakList = breakStatement->nextList;
 																																															delete breakStatement;
 																																														} |
 																																														
-				CONTINUE SC	                                    																														{
-																																															if (!symbolTableManager.isWhileScoped()) 
+				CONTINUE SC	                                    																														{																																															if (!symbolTableManager.isWhileScoped()) 
 																																															{
 																																																output::errorUnexpectedContinue(yylineno); 
 																																																exit(1);
 																																															}
-																																															Statement* contStatement = dynamic_cast<Statement*>($1);
-																																															string next_line = codeBuff.emit("br label @");
-																																															breakStatement->nextList = codeBuff.makelist(next_line, BranchLabelIndex::FIRST);
-																																															$$ = new Statement();
-																																															$$->continueList = contStatement->nextList;
+																																															StatementNode* contStatement = dynamic_cast<StatementNode*>($1);
+																																															int next_line = codeBuff.emit("br label @");
+																																															contStatement->nextList = codeBuff.makelist({next_line, FIRST});
+																																															$$ = new StatementNode();
+																																															dynamic_cast<StatementNode*>($$)->continueList = contStatement->nextList;
 																																															delete contStatement;
 																																														}
 				;
@@ -387,28 +398,32 @@ using namespace std;
 																} |
 		  ID LPAREN RPAREN	                                    {
 																	$$ = new call2Fun(); 
-																	checkIfFuncExist(dynamic_cast<Id*>($1)->name,std::vector<Type_>());
-																	dynamic_cast<call2Fun*>($$)->name = dynamic_cast<Id*>($1)->name;
-																	dynamic_cast<call2Fun*>($$)->expList = std::vector<Type_>();
-																	dynamic_cast<call2Fun*>($$)->type = symbolTableManager.getFunctionReturnType(dynamic_cast<Id*>($1)->name);
+																	call2Fun* result = dynamic_cast<call2Fun*>($$);
+																	Id* id = dynamic_cast<Id*>($1);
+																	checkIfFuncExist(id->name, std::vector<Type_>());
+																	result->name = id->name;
+																	result->expList = std::vector<Type_>();
+																	result->type = symbolTableManager.getFunctionReturnType(id->name);
 																	
-																	CodeGenerator::generateCallToFuncWithoutArguments($$);
-																	delete dynamic_cast<Id*>($1);
+																	CodeGenerator::generateCallToFuncWithoutArguments(result);
+																	delete id;
 																}
 		  ;
     ExpList: Exp	                                            {
-																	$$ = new expressionList(); 
+																	$$ = new expressionList();
+																	expressionList* result = dynamic_cast<expressionList*>($$);
 																	retType* exp = dynamic_cast<retType*>($1);
-																	$$->exprList = std::vector<Type_>(1, exp->type);
-																	$$->registersList = std::vector<std::string>(1, exp->reg);
+																	result->exprList = std::vector<Type_>(1, exp->type);
+																	result->registersList = std::vector<std::string>(1, exp->reg);
 																	delete exp;
 																} |
 		   	 Exp COMMA ExpList	                                {
 																	$$ = new expressionList();
-																	$$->exprList = dynamic_cast<expressionList*>($3)->exprList;
-																	$$->insertElement(dynamic_cast<retType*>($1)->type);
-																	$$->registersList = dynamic_cast<expressionList*>($3)->registersList;
-																	$$->insertRegister(dynamic_cast<retType*>($1)->reg);
+																	expressionList* result = dynamic_cast<expressionList*>($$);
+																	result->exprList = dynamic_cast<expressionList*>($3)->exprList;
+																	result->insertElement(dynamic_cast<retType*>($1)->type);
+																	result->registersList = dynamic_cast<expressionList*>($3)->registersList;
+																	result->insertRegister(dynamic_cast<retType*>($1)->reg);
 																	delete dynamic_cast<retType*>($1);
 																	delete dynamic_cast<expressionList*>($3);
 																}
@@ -431,9 +446,14 @@ using namespace std;
 																checkIfNumType(first->type);
 																checkIfNumType(second->type);
                                                                 if(second->type == Type_::TYPE_INT)
-                                                                {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
-                                                                else {dynamic_cast<retType*>($$)->type = first->type;}
-																CodeGenerator::generateAdditionCode(first, second, dynamic_cast<retType*>($$));
+                                                                {
+																	dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;
+																}
+                                                                else 
+																{
+																	dynamic_cast<retType*>($$)->type = first->type;
+																}
+																CodeGenerator::generateAdditionCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
                                                                 delete first; delete second;
 																} |
 																
@@ -444,8 +464,8 @@ using namespace std;
 																checkIfNumType(second->type);
                                                                 if(second->type==Type_::TYPE_INT)
                                                                 {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
-                                                                else {dynamic_cast<retType*>($$)->type=firstf->type;}
-																CodeGenerator::generateSubtractionCode(first, second, dynamic_cast<retType*>($$));
+                                                                else {dynamic_cast<retType*>($$)->type = first->type;}
+																CodeGenerator::generateSubtractionCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
                                                                 delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 
@@ -458,7 +478,7 @@ using namespace std;
                                                                 if(second->type==Type_::TYPE_INT)
                                                                 {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
                                                                 else {dynamic_cast<retType*>($$)->type=first->type;}
-																CodeGenerator::generateMultiplicationCode(first, second, dynamic_cast<retType*>($$));
+																CodeGenerator::generateMultiplicationCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
                                                                 delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 																
@@ -471,7 +491,7 @@ using namespace std;
                                                                 if(second->type==Type_::TYPE_INT)
                                                                 {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
                                                                 else {dynamic_cast<retType*>($$)->type=first->type;}
-																CodeGenerator::generateDivisionCode(first, second, dynamic_cast<retType*>($$));
+																CodeGenerator::generateDivisionCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
                                                                 delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 
@@ -525,8 +545,9 @@ using namespace std;
 																} |
          STRING      	                                        {
 																	$$ = new retType();
-																	dynamic_cast<retType*>($$)->type = Type_::TYPE_STRING;
-																	CodeGenerator::generateStringCode($$, dynamic_cast<String*>($1));
+																	retType* result = dynamic_cast<retType*>($$);
+																	result->type = Type_::TYPE_STRING;
+																	CodeGenerator::generateStringCode(result, dynamic_cast<String*>($1));
 																	delete dynamic_cast<String*>($1);
 																} |
 		 
@@ -750,8 +771,8 @@ using namespace std;
 						CheckType(exp->type, Type_::TYPE_BOOL);
 						//BUG: maybe here.
 						int branch_line = codeBuff.emit("br i1 " + exp->reg + ", label @, label @");
-						exp->trueList = codeBuff.makeList(branch_line, FIRST);
-						exp->falseList = codeBuff.makeList(branch_line, SECOND);
+						exp->trueList = codeBuff.makelist({branch_line, FIRST});
+						exp->falseList = codeBuff.makelist({branch_line, SECOND});
 						$$ = $1;
 						symbolTableManager.openScope();
 					};
@@ -760,8 +781,9 @@ using namespace std;
 	
 	M_JUMP: {
 				$$ = new JumpMarker();
+				JumpMarker* marker = dynamic_cast<JumpMarker*>($$);
 				int line = codeBuff.emit("br label @");
-				$$->nextList = codeBuff.makeList(line, FIRST);
+				marker->nextList = codeBuff.makelist({line, FIRST});
 			};
 
 %%

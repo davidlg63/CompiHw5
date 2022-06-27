@@ -3,6 +3,7 @@
 //
 
 #include "RegisterGenerator.h"
+#include <limits.h>
 
 using namespace std;
 

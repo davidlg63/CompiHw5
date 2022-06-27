@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "SymbolTableManager.h"
-#include "hw3_output.hpp"
 
 using namespace std;
 
@@ -56,14 +55,14 @@ void SymbolTableManager::openFuncScope() {
 
 
 void SymbolTableManager::closeScope() {
-    output::endScope();
+    //output::endScope();
     shared_ptr<SymbolTable> scope = top();
     outputFunctionParamsInScope();
     for (auto &entry : scope->table) {
         if (entry.isFunction) {
             outputFunctionDeclaration(entry);
         } else if(entry.offset >= 0){
-            output::printID(entry.name, entry.offset, ConvertTypeToString(entry.type));
+           // output::printID(entry.name, entry.offset, ConvertTypeToString(entry.type));
         }
     }
     this->pop();
@@ -247,7 +246,7 @@ void SymbolTableManager::outputFunctionParamsInScope() {
     {
         if(entry.offset < 0)
         {
-            output::printID(entry.name, entry.offset, ConvertTypeToString(entry.type));
+           // output::printID(entry.name, entry.offset, ConvertTypeToString(entry.type));
         }
     }
 }
@@ -256,8 +255,8 @@ void SymbolTableManager::outputFunctionDeclaration(SymbolTableEntry& entry) {
     vector<string> arg_types = vector<string>();
     entry.getArgsTypesAsStrings(arg_types);
     string type = ConvertTypeToString(entry.type);
-    type = output::makeFunctionType(type, arg_types);
-    output::printID(entry.name, entry.offset, type);
+   // type = output::makeFunctionType(type, arg_types);
+   // output::printID(entry.name, entry.offset, type);
 }
 
 std::string SymbolTableManager::getVarRegister(const std::string& var_name) {
@@ -281,7 +280,7 @@ void SymbolTableManager::assignRegisterToVar(const std::string& var_name, const 
     std::shared_ptr<SymbolTable> currentTable = this->top();
     while (nullptr != currentTable)
     {
-        for(const SymbolTableEntry& entry : currentTable->table)
+        for(SymbolTableEntry& entry : currentTable->table)
         {
             if(false == entry.isFunction && entry.name == var_name)
             {
