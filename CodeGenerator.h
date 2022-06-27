@@ -8,6 +8,8 @@
 using namespace std;
 class CodeGenerator {
 
+    static void generateDivideByZeroErrorCheckCodeAndExitIfYes(const retType* num);
+
 public:
     static void
     generateAdditionCode(const retType *firstNum, const retType *secondNum, const retType *result, string regNum);

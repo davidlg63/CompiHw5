@@ -74,6 +74,7 @@ void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retTy
 void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
 {
     /************************************ add devide by zero error***********************************/
+
     string code;
     if (firstNum->type == Type_::TYPE_INT && secondNum->type ==Type_::TYPE_BYTE)
     {
@@ -221,5 +222,30 @@ void CodeGenerator::generateStringCode(retType *result, const String* str) {
     string size = to_string(tmp.size() + 1);
     code =  reg + " = getelementptr [" + size + "x i8], [" + size +" x i8]* @" + reg + ", i32 0, i32 0";
     CodeBuffer::instance().emit(code);
+}
+
+void CodeGenerator::generateDivideByZeroErrorCheckCodeAndExitIfYes(const retType* num) {
+     CodeBuffer& instance = CodeBuffer::instance();
+     instance.emitGlobal(R"(@.divideByZeroErrorMessage = constant [23 x i8] c"Error division by zero\00")");
+     string is_zero_reg = RegisterGenerator::getRegister();
+     string check_is_zero = is_zero_reg + " = icmp eq i32 0, " + num->reg;
+     instance.emit(check_is_zero);
+     int loc = instance.emit("br i1 " + is_zero_reg + ", label @" + ", label @");
+     string ifEqual = instance.genLabel();
+
+     string divideByZeroMsgReg = RegisterGenerator::getRegister();
+     string getDivideByZeroMsgReg =
+             divideByZeroMsgReg + " = getelementptr [23 x i8], [23 x i8]* @.divideByZeroErrorMessage, i32 0, i32 0\")";
+     instance.emit(getDivideByZeroMsgReg);
+
+     string callPrint = "call void @print(i8* " + divideByZeroMsgReg + ")";
+     instance.emit(callPrint);
+
+     instance.emit("call void @exit(i32 1)");
+
+     string ifNotEqual = instance.genLabel();
+
+     instance.bpatch(CodeBuffer::makelist({loc, FIRST}), ifEqual);
+     instance.bpatch(CodeBuffer::makelist({loc, SECOND}), ifNotEqual);
 }
 
