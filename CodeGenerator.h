@@ -38,6 +38,8 @@ public:
     static void generateCallToFuncWithArguments(call2Fun* func, const expressionList* params);
 
     static void generateStringCode(retType* result_exp, const String* str);
+
+    static void generateFunctionCallCode(const call2Fun* func, const Id* func_id, const expressionList* params);
 };
 
 

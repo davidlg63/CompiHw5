@@ -3,6 +3,7 @@
 #include "CodeGenerator.h"
 #include "Symbols.h"
 #include "SymbolTableManager.h"
+#include <iostream>
 using namespace std;
 
 
@@ -217,6 +218,7 @@ void CodeGenerator::generateCallToFuncWithArguments(call2Fun *func, const expres
 void CodeGenerator::generateStringCode(retType *result, const String* str) {
     string tmp = str->value.substr(1, str->value.size() - 2);
     string reg = RegisterGenerator::getRegister();
+    result->reg = reg;
     reg = RegisterGenerator::getRawRegister(reg);
     string code = "@" + reg + " = constant [" + to_string(tmp.size() + 1) + " x i8] c\"" + tmp + "\\00\"";
     CodeBuffer::instance().emitGlobal(code);
@@ -248,5 +250,21 @@ void CodeGenerator::generateDivideByZeroErrorCheckCodeAndExitIfYes(const retType
 
      instance.bpatch(CodeBuffer::makelist({loc, FIRST}), ifEqual);
      instance.bpatch(CodeBuffer::makelist({loc, SECOND}), ifNotEqual);
+}
+
+void CodeGenerator::generateFunctionCallCode(const call2Fun *func, const Id *func_id, const expressionList *params) {
+    string func_type = SymbolTableManager::ConvertTypeToString(func->type);
+    string code = "call " + func_type + " @" + func->name + "(";
+    for(int i = 0; i < params->exprList.size(); i++)
+    {
+        string param_type = SymbolTableManager::ConvertTypeToLlvmType(params->exprList[i]);
+        code += param_type + " " + params->registersList[i];
+        if(i < params->exprList.size() - 1)
+        {
+            code += ", ";
+        }
+    }
+    code += ")";
+    CodeBuffer::instance().emit(code);
 }
 

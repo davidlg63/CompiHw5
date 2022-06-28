@@ -50,6 +50,7 @@ public:
     std::vector<std::string> getParamList(const std::string& functionName);
     std::string getStackPointer();
     static std::string ConvertTypeToString(Type_ type);
+    static std::string ConvertTypeToLlvmType(Type_ type);
 };
 
 #endif //HW3_SYMBOLTABLESTACK_H

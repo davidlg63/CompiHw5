@@ -310,6 +310,24 @@ std::string SymbolTableManager::getStackPointer() {
     return stackPointer;
 }
 
+std::string SymbolTableManager::ConvertTypeToLlvmType(Type_ type) {
+    switch (type)
+    {
+        case(Type_::TYPE_BOOL):
+            return  "i32";
+        case(Type_::TYPE_VOID):
+            return  "void";
+        case(Type_::TYPE_INT):
+            return  "i32";
+        case(Type_::TYPE_BYTE):
+            return  "i32";
+        case(Type_::TYPE_STRING):
+            return  "i8*";
+        default:
+            return "NOT_VALID";
+    }
+}
+
 
 
 
