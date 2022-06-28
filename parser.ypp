@@ -90,9 +90,7 @@ using namespace std;
 																										paramList* params = dynamic_cast<paramList*>($4);
 																										checkIfMainRedefined(id->name);
 																										checkIfDoubleDeclare(id->name, params->names_in_list);
-																								
 																										symbolTableManager.top()->InsertFunction(id->name, returnType->type, 0, params->types_in_list, params->names_in_list);
-																										
 																										$$ = new call2Fun();
 																										call2Fun* result = dynamic_cast<call2Fun*>($$);
 																										result->name = id->name;
@@ -134,6 +132,7 @@ using namespace std;
 																										delete dynamic_cast<paramList*>($4);
 																									};
 	FuncBody: LBRACE Statements RBRACE 																{
+																										
 																										string close_scope = "}";
 																										codeBuff.emit(close_scope);
 																									};
@@ -191,17 +190,22 @@ using namespace std;
 																	resultStatement->continueList = s->continueList;
 																	delete s;
 																} |
-				Statements M_INSTR  Statement	                { //BUG: maybe here
+				Statements M_JUMP M_INSTR  Statement	        { //BUG: maybe here
 																	$$ = new StatementNode();
 																	StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
-																	StatementNode* last = dynamic_cast<StatementNode*>($3);
+																	StatementNode* last = dynamic_cast<StatementNode*>($4);
 																	StatementNode* rest = dynamic_cast<StatementNode*>($1);
-																	codeBuff.bpatch(rest->nextList, dynamic_cast<Label*>($2)->label);
+																	Label* to_jump = dynamic_cast<Label*>($3);
+																	JumpMarker* jump = dynamic_cast<JumpMarker*>($2);
+																	codeBuff.bpatch(rest->nextList, to_jump->label);
+																	codeBuff.bpatch(jump->nextList, to_jump->label);
 																	resultStatement->nextList = last->nextList;
 																	resultStatement->breakList = codeBuff.merge(rest->breakList, last->breakList);
 																	resultStatement->continueList = codeBuff.merge(rest->continueList, last->continueList);
 																	delete last;
 																	delete rest;
+																	delete jump;
+																	delete to_jump;
 																}
 				;
 
@@ -328,7 +332,6 @@ using namespace std;
 																																												resultStatement->breakList = codeBuff.merge(if_statement->breakList, else_statement->breakList);
 																																												resultStatement->continueList = codeBuff.merge(if_statement->continueList, else_statement->continueList);
 																																												symbolTableManager.closeScope();
-																																												
 																																												delete if_body_label;
 																																												delete else_label;
 																																												delete exp;
@@ -785,10 +788,12 @@ using namespace std;
 	Bool_Exp: Exp 	{
 						retType* exp = dynamic_cast<retType*>($1);
 						CheckType(exp->type, Type_::TYPE_BOOL);
-						//BUG: maybe here.
-						int branch_line = codeBuff.emit("br i1 " + exp->reg + ", label @, label @");
-						exp->trueList = codeBuff.makelist({branch_line, FIRST});
-						exp->falseList = codeBuff.makelist({branch_line, SECOND});
+						if(exp->reg != "")
+						{
+							int branch_line = codeBuff.emit("br i1 " + exp->reg + ", label @, label @");
+							exp->trueList = codeBuff.makelist({branch_line, FIRST});
+							exp->falseList = codeBuff.makelist({branch_line, SECOND});
+						}
 						$$ = $1;
 						symbolTableManager.openScope();
 					};
@@ -943,7 +948,7 @@ void CheckIfValidTypeForVar(const Type_ type_to_assign)
 
 void debug()
 {
-	cout << "debug" << endl;
+	cerr << "debug" << endl;
 }
 
 

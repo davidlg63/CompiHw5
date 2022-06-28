@@ -26,6 +26,6 @@ std::string RegisterGenerator::getRegister() {
 }
 
 std::string RegisterGenerator::getRawRegister(string &str) {
-    return str.erase(0, 1); //Remove the '%'
+    return str.substr(1); //Remove the '%'
 }
 
