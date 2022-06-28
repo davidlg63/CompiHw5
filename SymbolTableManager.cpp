@@ -227,15 +227,15 @@ std::string SymbolTableManager::ConvertTypeToString(Type_ type) {
     switch (type)
         {
             case(Type_::TYPE_BOOL):
-                return  "BOOL";
+                return  "bool";
             case(Type_::TYPE_VOID):
-                return  "VOID";
+                return  "void";
             case(Type_::TYPE_INT):
-                return  "INT";
+                return  "int";
             case(Type_::TYPE_BYTE):
-                return  "BYTE";
+                return  "byte";
             case(Type_::TYPE_STRING):
-                return  "STRING";
+                return  "string";
             default:
                 return "NOT_VALID";
         }
