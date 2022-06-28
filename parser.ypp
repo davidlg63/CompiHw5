@@ -107,7 +107,11 @@ using namespace std;
 																											sParams += "i32, ";
 																										}
 																										sParams += ")";
-																										string code = "define" + sType + "@" + result->name + sParams;
+																										string code = "define " + sType + " @" + result->name + sParams;
+																										codeBuff.emit(code);
+																										codeBuff.emit("\n");
+																										string open_scope = "{\n"
+																										codeBuff.emit(open_scope);
 																										for (int i=0; i < paramsListSize; i++)
 																										{
 																											string reg = RegisterGenerator::getRegister();
@@ -130,7 +134,10 @@ using namespace std;
 																										delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); 
 																										delete dynamic_cast<paramList*>($4);
 																									};
-	FuncBody: LBRACE Statements RBRACE 																{};
+	FuncBody: LBRACE Statements RBRACE 																{
+																										string close_scope = "}\n";
+																										codeBuff.emit(close_scope);
+																									};
 
 
     retType: /*epsilon*/										{output::errorSyn(yylineno);exit(1);} |
