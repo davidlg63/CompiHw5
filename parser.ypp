@@ -85,7 +85,10 @@ using namespace std;
     FuncDecl: {symbolTableManager.openFuncScope();} FuncDeclaration FuncBody CLOSE_SCOPE 	{
 																								StatementNode* funcBody = dynamic_cast<StatementNode*>($3);
 																								call2Fun* funcDeclaration = dynamic_cast<call2Fun*>($2);
+																								int loc = CodeBuffer::instance().emit("br label @");
+																								auto jump_list = codeBuff.makelist({loc, FIRST});
 																								string label = codeBuff.genLabel();
+																								codeBuff.bpatch(jump_list, label);
 																								codeBuff.bpatch(funcBody->nextList, label);
 																								if(TYPE_VOID == funcDeclaration->type)
 																								{
@@ -111,7 +114,7 @@ using namespace std;
 																										result->name = id->name;
 																										result->type = returnType->type;
 																										result->expList = params->types_in_list;
-																										string sType = symbolTableManager.ConvertTypeToString(result->type);
+																										string sType = symbolTableManager.ConvertTypeToLlvmType(result->type);
 																										int paramsListSize = params->names_in_list.size();
 																										string sParams = "(";
 																										for (int i=0; i < paramsListSize; i++)
@@ -499,7 +502,8 @@ using namespace std;
 																	retType* exp = dynamic_cast<retType*>($1);
 																	if(TYPE_BOOL == exp->type && "" == exp->reg)
 																	{
-																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, RegisterGenerator::getRegister());
+																		exp->reg = RegisterGenerator::getRegister();
+																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, exp->reg);
 																	}
 																	result->exprList = std::vector<Type_>();
 																	result->registersList = std::vector<std::string>();
@@ -514,7 +518,8 @@ using namespace std;
 																	expressionList* expList = dynamic_cast<expressionList*>($3);
 																	if(TYPE_BOOL == exp->type && "" == exp->reg)
 																	{
-																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, RegisterGenerator::getRegister());
+																		exp->reg = RegisterGenerator::getRegister();
+																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, exp->reg);
 																	}
 																	result->exprList = expList->exprList;
 																	result->insertElement(exp->type);

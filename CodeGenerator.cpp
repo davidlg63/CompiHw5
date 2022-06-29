@@ -281,16 +281,19 @@ void CodeGenerator::generateBoolExpressionBackPatchLabels(std::vector<std::pair<
                                            const string& reg_to_assign)
 {
      CodeBuffer& codeBuffer = CodeBuffer::instance();
+
+     int trueLabelLine = codeBuffer.emit("br label @");
+     auto trueLabelList = CodeBuffer::makelist({trueLabelLine, FIRST});
      string trueLabel = codeBuffer.genLabel();
+     int nextLabelAfterIfLine = codeBuffer.emit("br label @");
      string falseLabel = codeBuffer.genLabel();
+     int nextLabelAfterFalseLine = codeBuffer.emit("br label @");
      string nextLabel = codeBuffer.genLabel();
-     codeBuffer.emit("br label %" + trueLabel);
-     codeBuffer.emit(trueLabel + ":");
-     codeBuffer.emit("br label %" + nextLabel);
-     codeBuffer.emit(falseLabel + ":");
-     codeBuffer.emit("br label %" + nextLabel);
-     codeBuffer.emit(nextLabel+":");
-     codeBuffer.emit(reg_to_assign +" = phi i32 [1" +", %"+trueLabel+"] , [0" + " , %"+falseLabel+"]");
+     auto nextLabelList = CodeBuffer::merge(CodeBuffer::makelist({nextLabelAfterIfLine, FIRST}),
+                                            CodeBuffer::makelist({nextLabelAfterFalseLine,FIRST}));
+     codeBuffer.bpatch(trueLabelList, trueLabel);
+     codeBuffer.bpatch(nextLabelList, nextLabel);
+     codeBuffer.emit(reg_to_assign +" = phi i32 [1" +", %" + trueLabel + "] , [0" + " , %" + falseLabel+"]");
      codeBuffer.bpatch(trueList, trueLabel);
      codeBuffer.bpatch(falseList, falseLabel);
 }
