@@ -82,7 +82,22 @@ using namespace std;
 	        ;
 
 
-    FuncDecl: {symbolTableManager.openFuncScope();} FuncDeclaration FuncBody CLOSE_SCOPE 	{};
+    FuncDecl: {symbolTableManager.openFuncScope();} FuncDeclaration FuncBody CLOSE_SCOPE 	{
+																								StatementNode* funcBody = dynamic_cast<StatementNode*>($3);
+																								call2Fun* funcDeclaration = dynamic_cast<call2Fun*>($2);
+																								string label = codeBuff.genLabel();
+																								codeBuff.bpatch(funcBody->nextList, label);
+																								if(TYPE_VOID == funcDeclaration->type)
+																								{
+																									codeBuff.emit("ret void");
+																								}
+																								else
+																								{
+																									codeBuff.emit("ret i32 0");
+																								}
+																								string close_scope = "}";
+																								codeBuff.emit(close_scope);
+																							};
 	
 	FuncDeclaration: retType ID LPAREN Formals RPAREN 												{
 																										retType* returnType = dynamic_cast<retType*>($1);
@@ -135,11 +150,7 @@ using namespace std;
 																										delete dynamic_cast<paramList*>($4);
 																									};
 	FuncBody: LBRACE Statements RBRACE 																{
-																										string label = codeBuff.genLabel();
-																										StatementNode* sNode = dynamic_cast<StatementNode*>($2);
-																										codeBuff.bpatch(sNode->nextList, label);
-																										string close_scope = "}";
-																										codeBuff.emit(close_scope);
+																										$$ = $2;
 																									};
 
 
@@ -268,17 +279,16 @@ using namespace std;
 															CheckType(varType->type, exp->type);
 															MakeDeclaration(varType->type, id->name);
 															std::string freshReg = RegisterGenerator::getRegister();
-															id->reg = freshReg;
+															//symbolTableManager.assignRegisterToVar(id->name, freshReg);
 															if(TYPE_BOOL == exp->type && exp->reg == "")
 															{
 																CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, freshReg);
 															}
-															
 															else
 															{
 																CodeGenerator::generateInitNewVar(freshReg, exp->reg);
 															}
-															string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name);
+															string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(id->name);
                                                                   CodeBuffer::instance().emit(assignment_code);
 															delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
 														} |
@@ -290,7 +300,7 @@ using namespace std;
 																	CheckIfValidTypeForVar(exp->type);
 																	MakeDeclaration(exp->type, id->name);
 																	std::string freshReg = RegisterGenerator::getRegister();
-																	id->reg = freshReg;
+																	//id->reg = freshReg;
 																	if(TYPE_BOOL == exp->type)
 																	{
 																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, freshReg);
@@ -500,12 +510,18 @@ using namespace std;
 		   	 Exp COMMA ExpList	                                {
 																	$$ = new expressionList();
 																	expressionList* result = dynamic_cast<expressionList*>($$);
-																	result->exprList = dynamic_cast<expressionList*>($3)->exprList;
-																	result->insertElement(dynamic_cast<retType*>($1)->type);
-																	result->registersList = dynamic_cast<expressionList*>($3)->registersList;
-																	result->insertRegister(dynamic_cast<retType*>($1)->reg);
-																	delete dynamic_cast<retType*>($1);
-																	delete dynamic_cast<expressionList*>($3);
+																	retType* exp = dynamic_cast<retType*>($1);
+																	expressionList* expList = dynamic_cast<expressionList*>($3);
+																	if(TYPE_BOOL == exp->type && "" == exp->reg)
+																	{
+																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, RegisterGenerator::getRegister());
+																	}
+																	result->exprList = expList->exprList;
+																	result->insertElement(exp->type);
+																	result->registersList = expList->registersList;
+																	result->insertRegister(exp->reg);
+																	delete exp;
+																	delete expList;
 																}
 			 ;
 
