@@ -325,8 +325,14 @@ using namespace std;
 																		output::errorMismatch(yylineno); 
 																		exit(1);
 																	} 
-																	std::string exp_type = symbolTableManager.ConvertTypeToString(exp->type);
-																	codeBuff.emit("ret " + exp_type + " " + exp->reg);
+																	string freshReg = exp->reg;
+																	if(exp->reg == "" && TYPE_BOOL == exp->type)
+																	{
+																		freshReg = RegisterGenerator::getRegister();
+																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, freshReg);
+																	}
+																	std::string exp_type = symbolTableManager.ConvertTypeToLlvmType(exp->type);
+																	codeBuff.emit("ret " + exp_type + " " + freshReg);
 																	delete exp;
 																}  |
 																
