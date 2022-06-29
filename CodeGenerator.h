@@ -40,6 +40,13 @@ public:
     static void generateStringCode(retType* result_exp, const String* str);
 
     static void generateFunctionCallCode(const call2Fun* func, const Id* func_id, const expressionList* params);
+
+    static std::string generateUpdateRegisterOnStackCode(int offset, const std::string& stackPointer);
+
+    static void generateBoolExpressionBackPatchLabels(std::vector<std::pair<int, BranchLabelIndex>>& trueList,
+                                                      std::vector<std::pair<int, BranchLabelIndex>>& falseList,
+                                                      const std::string& reg_to_assign);
+    static void generateInitNewVar(const std::string& new_reg, const std::string& reg);
 };
 
 

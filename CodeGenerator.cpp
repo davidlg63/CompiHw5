@@ -269,3 +269,35 @@ void CodeGenerator::generateFunctionCallCode(const call2Fun *func, const Id *fun
     CodeBuffer::instance().emit(code);
 }
 
+string CodeGenerator::generateUpdateRegisterOnStackCode(const int offset, const string& stackPointer) {
+    string new_reg = RegisterGenerator::getRegister();
+    string code = new_reg + " = getelementptr [50 x i32], [50 x i32]* " + stackPointer + ", i32 0 , i32 " + to_string(offset);
+    CodeBuffer::instance().emit(code);
+    return new_reg;
+}
+
+void CodeGenerator::generateBoolExpressionBackPatchLabels(std::vector<std::pair<int, BranchLabelIndex>>& trueList,
+                                           std::vector<std::pair<int, BranchLabelIndex>>& falseList,
+                                           const string& reg_to_assign)
+{
+     CodeBuffer& codeBuffer = CodeBuffer::instance();
+     string trueLabel = codeBuffer.genLabel();
+     string falseLabel = codeBuffer.genLabel();
+     string nextLabel = codeBuffer.genLabel();
+     codeBuffer.emit("br label %" + trueLabel);
+     codeBuffer.emit(trueLabel + ":");
+     codeBuffer.emit("br label %" + nextLabel);
+     codeBuffer.emit(falseLabel + ":");
+     codeBuffer.emit("br label %" + nextLabel);
+     codeBuffer.emit(nextLabel+":");
+     codeBuffer.emit(reg_to_assign +" = phi i32 [1" +", %"+trueLabel+"] , [0" + " , %"+falseLabel+"]");
+     codeBuffer.bpatch(trueList, trueLabel);
+     codeBuffer.bpatch(falseList, falseLabel);
+}
+
+void CodeGenerator::generateInitNewVar(const string& new_reg, const string& reg)
+{
+    string code = new_reg + " = add i32 %t"+ reg + ", 0";
+    CodeBuffer::instance().emit(code);
+}
+
