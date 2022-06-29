@@ -8,8 +8,8 @@
 using namespace std;
 
 SymbolTableManager::SymbolTableManager() : _symbolTableStack(stack<shared_ptr<SymbolTable>>()), _offsetStack(stack<int>()){
-    _offsetStack.push(0); //Zero should always be the first offset
-    _symbolTableStack.push(make_shared<SymbolTable>(SymbolTable(nullptr)));
+    //_offsetStack.push(0); //Zero should always be the first offset
+    //_symbolTableStack.push(make_shared<SymbolTable>(SymbolTable(nullptr)));
 }
 
 void SymbolTableManager::pushOnSameScope(std::shared_ptr<SymbolTable> table) {
@@ -21,7 +21,15 @@ void SymbolTableManager::pushOnSameScope(std::shared_ptr<SymbolTable> table) {
 
 void SymbolTableManager::pushOnNewScope(std::shared_ptr<SymbolTable> table) {
     _symbolTableStack.push(table);
-    int current_offset = _offsetStack.top();
+    int current_offset;
+    if (_offsetStack.empty())
+    {
+        current_offset = 0;
+    }
+    else
+    {
+        current_offset = _offsetStack.top();
+    }
     _offsetStack.push(current_offset);
 }
 

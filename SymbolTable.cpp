@@ -13,6 +13,7 @@ SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, const ScopeType sc
 void SymbolTable::InsertFunction(const std::string &name, const Type_ type, const int offset, const std::vector<Type_> &params,
                                  const std::vector<std::string>& paramsIdentifiers)
 {
+
     int paramsOffset = -1;
     auto itParamsIds = paramsIdentifiers.begin();
     this->scopeType = FUNC_SCOPE;
