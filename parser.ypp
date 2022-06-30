@@ -115,11 +115,11 @@ using namespace std;
 																										result->type = returnType->type;
 																										result->expList = params->types_in_list;
 																										string sType = symbolTableManager.ConvertTypeToLlvmType(result->type);
-																										int paramsListSize = params->names_in_list.size();
+																										int paramsListSize = params->types_in_list.size();
 																										string sParams = "(";
 																										for (int i=0; i < paramsListSize; i++)
 																										{
-																											sParams += "i32";
+																											sParams += SymbolTableManager::ConvertTypeToLlvmType(params->types_in_list[i]);
 																											if(i< paramsListSize-1)
 																											{
 																												sParams += ", ";
