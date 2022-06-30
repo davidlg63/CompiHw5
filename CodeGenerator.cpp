@@ -20,6 +20,7 @@ void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retTy
 
 void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
 {
+     generateDivideByZeroErrorCheckCodeAndExitIfYes(secondNum);
      DoAction(regNum, firstNum->reg, secondNum->reg, "sdiv");
 }
 
