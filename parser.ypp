@@ -384,12 +384,12 @@ using namespace std;
 																	delete exp;
 																}  |
 																
-				IF LPAREN Bool_Exp RPAREN M_JUMP M_INSTR Statement         {
+				IF LPAREN Bool_Exp RPAREN M_INSTR Statement  	{
 																		$$ = new StatementNode();
 																		StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
-																		Label* statement_label = dynamic_cast<Label*>($6);
+																		Label* statement_label = dynamic_cast<Label*>($5);
 																		retType* exp = dynamic_cast<retType*>($3);
-																		StatementNode* statement = dynamic_cast<StatementNode*>($7);
+																		StatementNode* statement = dynamic_cast<StatementNode*>($6);
 																		codeBuff.bpatch(exp->trueList, statement_label->label);
 																		resultStatement->nextList = codeBuff.merge(exp->falseList, statement->nextList);
 																		resultStatement->breakList = statement->breakList;
@@ -399,18 +399,18 @@ using namespace std;
 																		delete statement_label;
 																		delete exp;
 																		delete statement;
-																	} |
+																} |
 																	
 																	
-				IF LPAREN Bool_Exp RPAREN M_JUMP M_INSTR Statement ELSE M_JUMP {symbolTableManager.closeScope(); symbolTableManager.openScope();} M_INSTR Statement CLOSE_SCOPE	{
+				IF LPAREN Bool_Exp RPAREN M_INSTR Statement ELSE M_JUMP {symbolTableManager.closeScope(); symbolTableManager.openScope();} M_INSTR Statement CLOSE_SCOPE	{
 																																												$$ = new StatementNode();
 																																												StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
-																																												Label* if_body_label = dynamic_cast<Label*>($6);
-																																												Label* else_label = dynamic_cast<Label*>($11);
+																																												Label* if_body_label = dynamic_cast<Label*>($5);
+																																												Label* else_label = dynamic_cast<Label*>($10);
 																																												retType* exp = dynamic_cast<retType*>($3);
-																																												StatementNode* if_statement = dynamic_cast<StatementNode*>($7);
-																																												StatementNode* else_statement = dynamic_cast<StatementNode*>($12);
-																																												JumpMarker* jump_over_else = dynamic_cast<JumpMarker*>($9);
+																																												StatementNode* if_statement = dynamic_cast<StatementNode*>($6);
+																																												StatementNode* else_statement = dynamic_cast<StatementNode*>($11);
+																																												JumpMarker* jump_over_else = dynamic_cast<JumpMarker*>($8);
 																																												codeBuff.bpatch(exp->trueList, if_body_label->label);
 																																												codeBuff.bpatch(exp->falseList, else_label->label);
 																																												auto tmpList = codeBuff.merge(if_statement->nextList, jump_over_else->nextList);
@@ -433,13 +433,16 @@ using namespace std;
 											JumpMarker* initialJump = dynamic_cast<JumpMarker*>($2);
 											Label* jumpLabel = dynamic_cast<Label*>($3);
 											codeBuff.bpatch(initialJump->nextList, jumpLabel->label);
-											string freshReg = RegisterGenerator::getRegister();
-											string check_if_exp_false = freshReg + " = icmp eq i1 0, " + exp->reg;
-											codeBuff.emit(check_if_exp_false);
-											string truncReg;
-											if(TYPE_BOOL != exp->type)
-											{											
-												truncReg = CodeGenerator::generateTruncRegisterCode(freshReg);
+											if(exp->reg != "")
+											{
+												string freshReg = RegisterGenerator::getRegister();
+												string check_if_exp_false = freshReg + " = icmp eq i1 0, " + exp->reg;
+												codeBuff.emit(check_if_exp_false);
+												string truncReg;
+												if(TYPE_BOOL != exp->type)
+												{											
+													truncReg = CodeGenerator::generateTruncRegisterCode(freshReg);
+												}
 											}
 											//string branch_code = "br i1 " + truncReg + ", label @, label @";
 											//int branch_line = codeBuff.emit(branch_code);
@@ -817,7 +820,7 @@ using namespace std;
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
 																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
 																	//result->reg = extendedReg;
-																	result->reg = freshReg;
+																	//result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 
@@ -927,13 +930,13 @@ using namespace std;
 	Bool_Exp: Exp 	{
 						retType* exp = dynamic_cast<retType*>($1);
 						CheckType(exp->type, Type_::TYPE_BOOL);
-						/*if(exp->reg != "")
+						if(exp->reg != "")
 						{
 							string truncReg = CodeGenerator::generateTruncRegisterCode(exp->reg);
 							int branch_line = codeBuff.emit("br i1 " + truncReg + ", label @, label @");
 							exp->trueList = codeBuff.makelist({branch_line, FIRST});
 							exp->falseList = codeBuff.makelist({branch_line, SECOND});
-						}*/
+						}
 						$$ = $1;
 						symbolTableManager.openScope();
 					};
@@ -946,6 +949,14 @@ using namespace std;
 				int line = codeBuff.emit("br label @");
 				marker->nextList = codeBuff.makelist({line, FIRST});
 			};
+			
+	M_JUMP_INSTR : M_JUMP M_INSTR 	{
+										JumpMarker* jump = dynamic_cast<JumpMarker*>($1);
+										Label* label = dynamic_cast<Label*>($2);
+										codeBuff.bpatch(jump->nextList, label->label);
+										delete jump;
+										delete label;
+									};
 
 %%
 
