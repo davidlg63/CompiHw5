@@ -10,36 +10,40 @@ using namespace std;
 
  void CodeGenerator::generateAdditionCode(const retType* firstNum, const retType* secondNum,  retType* result,  string& regNum)
 {
-     DoAction(regNum, firstNum, secondNum, "add");
+     DoAction(result, firstNum, secondNum, "add");
 }
 
 void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retType* secondNum,  retType* result,  string& regNum)
 {
-     DoAction(regNum, firstNum, secondNum, "sub");
+     DoAction(result, firstNum, secondNum, "sub");
 }
 
 void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum,  retType *result,  string& regNum)
 {
      generateDivideByZeroErrorCheckCodeAndExitIfYes(secondNum);
-     DoAction(regNum, firstNum, secondNum, "sdiv");
+     DoAction(result, firstNum, secondNum, "sdiv");
 }
 
 void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum,  retType *result,  string& regNum)
 {
-    DoAction(regNum,firstNum, secondNum, "mul");
+    DoAction(result,firstNum, secondNum, "mul");
 }
 
-void CodeGenerator::DoAction( string& resultReg, const retType* firstReg, const retType* secondReg, const string& action)
+void CodeGenerator::DoAction(retType* result, const retType* firstReg, const retType* secondReg, const string& action)
 {
-     string code = resultReg + " = " + action + " i32 " + firstReg->reg + ", " + secondReg->reg;
+     string reg1 = RegisterGenerator::getRegister();
+     string code = reg1 + " = " + action + " i32 " + firstReg->reg + ", " + secondReg->reg;
+     result->reg = reg1;
      CodeBuffer::instance().emit(code);
     if(TYPE_BYTE == firstReg->type && TYPE_BYTE == secondReg->type)
     {
-        resultReg = generateTruncRegisterToi8Code(resultReg);
-        string extendedResult = RegisterGenerator::getRegister();
-        code = extendedResult + " = zext i8 " + resultReg + " to i32";
+        string reg2 = RegisterGenerator::getRegister();
+        code = reg2 + " = trunc i32 " + reg1 + " to i8";
         CodeBuffer::instance().emit(code);
-        resultReg = extendedResult;
+        string reg3 = RegisterGenerator::getRegister();
+        code = reg3 + " = zext i8 " + reg2 + " to i32";
+        CodeBuffer::instance().emit(code);
+        result->reg = reg3;
     }
 }
 

@@ -578,8 +578,12 @@ using namespace std;
 		  ;
 
 
-    Exp: LPAREN Exp RPAREN	                                    {$$ = new retType(); dynamic_cast<retType*>($$)->type= dynamic_cast<retType*>($2)->type;
-                                                                delete dynamic_cast<retType*>($2); }|
+    Exp: LPAREN Exp RPAREN	                                    {
+																	$$ = new retType(); 
+																	dynamic_cast<retType*>($$)->type = dynamic_cast<retType*>($2)->type;
+																	dynamic_cast<retType*>($$)->reg = dynamic_cast<retType*>($2)->reg;
+																	delete dynamic_cast<retType*>($2); 
+																}|
 																
 														
          Exp BINOP_PLUS Exp	                            		{

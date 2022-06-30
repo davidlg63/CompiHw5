@@ -11,18 +11,18 @@ class CodeGenerator {
 
 public:
     static void
-    generateAdditionCode(const retType *firstNum, const retType *secondNum, const retType *result,   std::string& regNum);
+    generateAdditionCode(const retType *firstNum, const retType *secondNum,  retType *result,   std::string& regNum);
 
     static void
-    generateSubtractionCode(const retType *firstNum, const retType *secondNum, const retType *result,   std::string& regNum);
+    generateSubtractionCode(const retType *firstNum, const retType *secondNum,  retType *result,   std::string& regNum);
 
     static void
-    generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result,   std::string& regNum);
+    generateMultiplicationCode(const retType *firstNum, const retType *secondNum,  retType *result,   std::string& regNum);
 
     static void
-    generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result,   std::string& regNum);
+    generateDivisionCode(const retType *firstNum, const retType *secondNum,  retType *result,   std::string& regNum);
 
-    static void DoAction( string& resultReg, const retType* firstReg, const retType* secondReg, const std::string& action);
+    static void DoAction(retType* result, const retType* firstReg, const retType* secondReg, const std::string& action);
 
     //Code that assigns value to register reg
     static void generateIntByteCreationCode(const std::string &reg, const std::string &value);
