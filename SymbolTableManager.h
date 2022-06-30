@@ -49,6 +49,7 @@ public:
     bool isWhileScoped();
     std::vector<std::string> getParamList(const std::string& functionName);
     std::string getStackPointer();
+    void setStackPointer(const std::string& stackPointer);
     static std::string ConvertTypeToString(Type_ type);
     static std::string ConvertTypeToLlvmType(Type_ type);
 };

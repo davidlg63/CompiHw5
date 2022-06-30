@@ -8,7 +8,7 @@
 using namespace std;
 
 SymbolTableManager::SymbolTableManager() : _symbolTableStack(stack<shared_ptr<SymbolTable>>()), _offsetStack(stack<int>()){
-    //_offsetStack.push(0); //Zero should always be the first offset
+    _offsetStack.push(0); //Zero should always be the first offset
     //_symbolTableStack.push(make_shared<SymbolTable>(SymbolTable(nullptr)));
 }
 
@@ -334,6 +334,10 @@ std::string SymbolTableManager::ConvertTypeToLlvmType(Type_ type) {
         default:
             return "NOT_VALID";
     }
+}
+
+void SymbolTableManager::setStackPointer(const std::string& sp) {
+    stackPointer = sp;
 }
 
 
