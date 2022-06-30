@@ -519,7 +519,7 @@ using namespace std;
 																	result->expList = std::vector<Type_>();
 																	result->type = symbolTableManager.getFunctionReturnType(id->name);
 																	
-																	CodeGenerator::generateCallToFuncWithoutArguments(result);
+																	result->reg = CodeGenerator::generateFunctionCallCode(result, id, new expressionList());
 																	delete id;
 																}
 		  ;
@@ -950,13 +950,6 @@ using namespace std;
 				marker->nextList = codeBuff.makelist({line, FIRST});
 			};
 			
-	M_JUMP_INSTR : M_JUMP M_INSTR 	{
-										JumpMarker* jump = dynamic_cast<JumpMarker*>($1);
-										Label* label = dynamic_cast<Label*>($2);
-										codeBuff.bpatch(jump->nextList, label->label);
-										delete jump;
-										delete label;
-									};
 
 %%
 
