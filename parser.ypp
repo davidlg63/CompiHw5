@@ -141,7 +141,7 @@ using namespace std;
 																										for (int i=0; i < paramsListSize; i++)
 																										{
 																											string var = params->names_in_list[i];
-																											string storeCommand = "store i32 %" + to_string(i) + " ,i32* " + symbolTableManager.getVarRegister(var);
+																											string storeCommand = "store i32 %" + to_string(i) + ", i32* " + symbolTableManager.getVarRegister(var);
 																											codeBuff.emit(storeCommand);
 																										}
 																										string stackVar = RegisterGenerator::getRegister() + "sp";
@@ -246,8 +246,8 @@ using namespace std;
 																			} |
 				
 				Type ID SC	                                    {
-																	MakeDeclaration(dynamic_cast<retType*>($1)->type, dynamic_cast<Id*>($2)->name);
-																	
+																	retType* type = dynamic_cast<retType*>($1);
+																	MakeDeclaration(type->type, dynamic_cast<Id*>($2)->name);
 																	$$ = new StatementNode();
 																	int offset = symbolTableManager.getVarOffset(dynamic_cast<Id*>($2)->name);
 																	if(offset >= 0)
@@ -256,6 +256,7 @@ using namespace std;
 																		string code = reg + " = getelementptr [50 x i32], [50 x i32]* " + symbolTableManager.getStackPointer() + ", i32 0 , i32 " + to_string(offset);
 																		CodeBuffer::instance().emit(code);
 																		symbolTableManager.assignRegisterToVar(dynamic_cast<Id*>($2)->name, reg);
+																		string llvmType = SymbolTableManager::ConvertTypeToLlvmType(type->type);
 																		code = "store i32 0, i32* " + reg;
 																		CodeBuffer::instance().emit(code);
 																	}
@@ -291,8 +292,9 @@ using namespace std;
 															{
 																CodeGenerator::generateInitNewVar(freshReg, exp->reg);
 															}
-															string assignment_code = "store i32 " + freshReg + " ,i32* " + symbolTableManager.getVarRegister(id->name);
-                                                                  CodeBuffer::instance().emit(assignment_code);
+															//string llvmTypeOfVar = SymbolTableManager::ConvertTypeToLlvmType(varType->type);
+															string assignment_code = "store i32 " + freshReg + ", i32* " + symbolTableManager.getVarRegister(id->name);
+                                                            CodeBuffer::instance().emit(assignment_code);
 															delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
 														} |
 														
@@ -318,7 +320,8 @@ using namespace std;
 																	{
 																		CodeGenerator::generateInitNewVar(freshReg, exp->reg);
 																	}
-																	string assignment_code = "store i32 " + freshReg + " ,i32* " + symbolTableManager.getVarRegister(id->name);
+																	//string llvmType = SymbolTableManager::ConvertTypeToLlvmType(exp->type);
+																	string assignment_code = "store i32 " + freshReg + ", i32* " + symbolTableManager.getVarRegister(id->name);
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete exp; 
 																	delete id;
@@ -339,7 +342,8 @@ using namespace std;
 																	{
 																		CodeGenerator::generateInitNewVar(freshReg, exp->reg);
 																	}
-																	string assignment_code = "store i32 " + freshReg + " ,i32* " + idReg;
+																	//string llvmType = SymbolTableManager::ConvertTypeToLlvmType(exp->type);
+																	string assignment_code = "store i32 " + freshReg + ", i32* " + idReg;
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete id;
 																	delete exp;
@@ -380,12 +384,12 @@ using namespace std;
 																	delete exp;
 																}  |
 																
-				IF LPAREN Bool_Exp RPAREN M_INSTR Statement         {
+				IF LPAREN Bool_Exp RPAREN M_JUMP M_INSTR Statement         {
 																		$$ = new StatementNode();
 																		StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
-																		Label* statement_label = dynamic_cast<Label*>($5);
+																		Label* statement_label = dynamic_cast<Label*>($6);
 																		retType* exp = dynamic_cast<retType*>($3);
-																		StatementNode* statement = dynamic_cast<StatementNode*>($6);
+																		StatementNode* statement = dynamic_cast<StatementNode*>($7);
 																		codeBuff.bpatch(exp->trueList, statement_label->label);
 																		resultStatement->nextList = codeBuff.merge(exp->falseList, statement->nextList);
 																		resultStatement->breakList = statement->breakList;
@@ -398,15 +402,15 @@ using namespace std;
 																	} |
 																	
 																	
-				IF LPAREN Bool_Exp RPAREN M_INSTR Statement ELSE M_JUMP {symbolTableManager.closeScope(); symbolTableManager.openScope();} M_INSTR Statement CLOSE_SCOPE	{
+				IF LPAREN Bool_Exp RPAREN M_JUMP M_INSTR Statement ELSE M_JUMP {symbolTableManager.closeScope(); symbolTableManager.openScope();} M_INSTR Statement CLOSE_SCOPE	{
 																																												$$ = new StatementNode();
 																																												StatementNode* resultStatement = dynamic_cast<StatementNode*>($$);
-																																												Label* if_body_label = dynamic_cast<Label*>($5);
-																																												Label* else_label = dynamic_cast<Label*>($10);
+																																												Label* if_body_label = dynamic_cast<Label*>($6);
+																																												Label* else_label = dynamic_cast<Label*>($11);
 																																												retType* exp = dynamic_cast<retType*>($3);
-																																												StatementNode* if_statement = dynamic_cast<StatementNode*>($6);
-																																												StatementNode* else_statement = dynamic_cast<StatementNode*>($11);
-																																												JumpMarker* jump_over_else = dynamic_cast<JumpMarker*>($8);
+																																												StatementNode* if_statement = dynamic_cast<StatementNode*>($7);
+																																												StatementNode* else_statement = dynamic_cast<StatementNode*>($12);
+																																												JumpMarker* jump_over_else = dynamic_cast<JumpMarker*>($9);
 																																												codeBuff.bpatch(exp->trueList, if_body_label->label);
 																																												codeBuff.bpatch(exp->falseList, else_label->label);
 																																												auto tmpList = codeBuff.merge(if_statement->nextList, jump_over_else->nextList);
