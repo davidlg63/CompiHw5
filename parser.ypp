@@ -727,11 +727,18 @@ using namespace std;
 																	retType* ret = dynamic_cast<retType*>($$);
 																	retType* exp = dynamic_cast<retType*>($2);
 																	CheckType(exp->type, Type_::TYPE_BOOL);
+																	if("" != exp->reg)
+																	{
+																		string condVar = RegisterGenerator::getRegister();
+																		CodeBuffer::instance().emit(condVar + " = icmp eq i32 " + exp->reg + " ,1");
+																		int branch_line = codeBuff.emit("br i1 " + condVar + ", label @, label @");
+																		exp->trueList = CodeBuffer::makelist({branch_line, FIRST});
+																		exp->falseList = CodeBuffer::makelist({branch_line, SECOND});
+																	}
 																	ret->type = Type_::TYPE_BOOL;
-																	ret->reg = exp->reg;
 																	ret->trueList = exp->falseList;
 																	ret->falseList = exp->trueList;
-																	delete dynamic_cast<retType*>($2);
+																	delete exp;
 																} |
 																
          Exp AND M_INSTR Exp 	                                {
@@ -945,11 +952,12 @@ using namespace std;
 						CheckType(exp->type, Type_::TYPE_BOOL);
 						if(exp->reg != "")
 						{
-							codeBuff.emit("debug");
 							string truncReg = CodeGenerator::generateTruncRegisterCode(exp->reg);
-							int branch_line = codeBuff.emit("br i1 " + truncReg + ", label @, label @");
-							exp->trueList = CodeBuffer::merge(CodeBuffer::makelist({branch_line, FIRST}), exp->trueList);
-							exp->falseList = CodeBuffer::merge(CodeBuffer::makelist({branch_line, SECOND}), exp->falseList);
+							string condVar = RegisterGenerator::getRegister();
+							CodeBuffer::instance().emit(condVar + " = icmp eq i32 " + exp->reg + " ,1");
+							int branch_line = codeBuff.emit("br i1 " + condVar + ", label @, label @");
+							exp->trueList = CodeBuffer::makelist({branch_line, FIRST});
+							exp->falseList = CodeBuffer::makelist({branch_line, SECOND});
 						}
 						$$ = $1;
 						symbolTableManager.openScope();
