@@ -121,7 +121,6 @@ void CodeGenerator::generateStringCode(retType *result, const String* str) {
 
 void CodeGenerator::generateDivideByZeroErrorCheckCodeAndExitIfYes(const retType* num) {
      CodeBuffer& instance = CodeBuffer::instance();
-     instance.emitGlobal(R"(@.divideByZeroErrorMessage = constant [23 x i8] c"Error division by zero\00")");
      string is_zero_reg = RegisterGenerator::getRegister();
      string check_is_zero = is_zero_reg + " = icmp eq i32 0, " + num->reg;
      instance.emit(check_is_zero);
@@ -218,5 +217,10 @@ std::string CodeGenerator::generateConvertFromi1Toi32(const std::string& reg) {
      string code = freshReg + " = zext i1 " + reg + " to i32";
      CodeBuffer::instance().emit(code);
      return freshReg;
+}
+
+void CodeGenerator::generateDivideByZeroErrorMessageDefinition() {
+    CodeBuffer::instance().emitGlobal
+    (R"(@.divideByZeroErrorMessage = constant [23 x i8] c"Error division by zero\00")");
 }
 

@@ -67,14 +67,20 @@ using namespace std;
 %left RBRACE
 %right ELSE
 %%
-    Program: {symbolTableManager.openScope(); InsertPrintFunctions(); CodeGenerator::generateStandardLibraryFunctionsDeclaration(); CodeGenerator::generatePrintFunctions();} Funcs	        {
-																																											
-																																																if(Type_::TYPE_VOID != symbolTableManager.doesFunctionExist("main", vector<Type_>())) 
-																																																	{output::errorMainMissing(); exit(1);}
-																																																codeBuff.printGlobalBuffer();
-																																																codeBuff.printCodeBuffer();
-																																																symbolTableManager.closeScope();
-																																															}
+    Program: {
+				symbolTableManager.openScope();
+				InsertPrintFunctions(); 
+				CodeGenerator::generateStandardLibraryFunctionsDeclaration();
+				CodeGenerator::generatePrintFunctions();
+				CodeGenerator::generateDivideByZeroErrorMessageDefinition();
+			} 
+				Funcs	        {
+									if(Type_::TYPE_VOID != symbolTableManager.doesFunctionExist("main", vector<Type_>())) 
+										{output::errorMainMissing(); exit(1);}
+									codeBuff.printGlobalBuffer();
+									codeBuff.printCodeBuffer();
+									symbolTableManager.closeScope();
+								}
             ;
 
     Funcs:                   	                                {}

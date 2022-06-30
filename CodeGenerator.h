@@ -52,6 +52,8 @@ public:
     static std::string generateTruncRegisterCode(const std::string& reg_to_trunc);
 
     static std::string generateConvertFromi1Toi32(const std::string& reg);
+
+    static void generateDivideByZeroErrorMessageDefinition();
 };
 
 
