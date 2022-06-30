@@ -200,7 +200,7 @@ void CodeGenerator::generateBoolExpressionBackPatchLabels(std::vector<std::pair<
 
 void CodeGenerator::generateInitNewVar(const string& new_reg, const string& reg)
 {
-    string code = new_reg + " = add i32 %t"+ reg + ", 0";
+    string code = new_reg + " = add i32 "+ reg + ", 0";
     CodeBuffer::instance().emit(code);
 }
 
@@ -209,5 +209,12 @@ string CodeGenerator::generateTruncRegisterCode(const string &reg_to_trunc) {
     string truncCode = truncReg + " =  trunc i32 " +  reg_to_trunc+ " to i1";
     CodeBuffer::instance().emit(truncCode);
     return truncReg;
+}
+
+std::string CodeGenerator::generateConvertFromi1Toi32(const std::string& reg) {
+     string freshReg = RegisterGenerator::getRegister();
+     string code = freshReg + " = zext i1 " + reg + " to i32";
+     CodeBuffer::instance().emit(code);
+     return freshReg;
 }
 

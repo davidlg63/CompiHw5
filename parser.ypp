@@ -148,7 +148,7 @@ using namespace std;
 																										string stackPointer = symbolTableManager.getStackPointer();
 																										stackPointer = stackVar;
 																										code = stackVar + " = alloca [50 x i32]";
-																										CodeBuffer::instance().emit(code);
+																										codeBuff.emit(code);
 																										delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); 
 																										delete dynamic_cast<paramList*>($4);
 																									};
@@ -269,7 +269,6 @@ using namespace std;
 															Id* id = dynamic_cast<Id*>($2);
 															checkIfVarExists(varType->type, id->name);
 															int offset = symbolTableManager.getVarOffset(id->name);
-															//If var already exists we update it on the stack.
 															if(offset >= 0)
 															{
 																string updatedReg = CodeGenerator::generateUpdateRegisterOnStackCode(offset, symbolTableManager.getStackPointer());
@@ -284,7 +283,7 @@ using namespace std;
 															CheckType(varType->type, exp->type);
 															MakeDeclaration(varType->type, id->name);
 															std::string freshReg = RegisterGenerator::getRegister();
-															//symbolTableManager.assignRegisterToVar(id->name, freshReg);
+															symbolTableManager.assignRegisterToVar(id->name, RegisterGenerator::getRegister());
 															if(TYPE_BOOL == exp->type && exp->reg == "")
 															{
 																CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, freshReg);
@@ -293,7 +292,7 @@ using namespace std;
 															{
 																CodeGenerator::generateInitNewVar(freshReg, exp->reg);
 															}
-															string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(id->name);
+															string assignment_code = "store i32 " + freshReg + " ,i32* " + symbolTableManager.getVarRegister(id->name);
                                                                   CodeBuffer::instance().emit(assignment_code);
 															delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
 														} |
@@ -305,12 +304,16 @@ using namespace std;
 																	CheckIfValidTypeForVar(exp->type);
 																	MakeDeclaration(exp->type, id->name);
 																	std::string freshReg = RegisterGenerator::getRegister();
-																	//id->reg = freshReg;
+																	symbolTableManager.assignRegisterToVar(id->name, RegisterGenerator::getRegister());
 																	if(TYPE_BOOL == exp->type)
 																	{
 																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, freshReg);
 																	}
-																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(id->name);
+																	else
+																	{
+																		CodeGenerator::generateInitNewVar(freshReg, exp->reg);
+																	}
+																	string assignment_code = "store i32 " + freshReg + " ,i32* " + symbolTableManager.getVarRegister(id->name);
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete exp; 
 																	delete id;
@@ -321,12 +324,17 @@ using namespace std;
 																	retType* exp = dynamic_cast<retType*>($3);
 																	Id* id = dynamic_cast<Id*>($1);
 																	CheckIfAssignmentValid(id->name, exp->type);
+																	string idReg = symbolTableManager.getVarRegister(id->name);
 																	string freshReg = RegisterGenerator::getRegister();
 																	if(TYPE_BOOL == exp->type)
 																	{
-																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, freshReg);
+																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, idReg);
 																	}
-																	string assignment_code = "store i32 " + freshReg + " ,i32*" + symbolTableManager.getVarRegister(dynamic_cast<Id*>($2)->name);
+																	else
+																	{
+																		CodeGenerator::generateInitNewVar(freshReg, exp->reg);
+																	}
+																	string assignment_code = "store i32 " + freshReg + " ,i32* " + idReg;
                                                                     CodeBuffer::instance().emit(assignment_code);
 																	delete id;
 																	delete exp;
@@ -409,31 +417,34 @@ using namespace std;
 																																												delete jump_over_else;
 																																											} |
 				
-				WHILE M_INSTR LPAREN Exp RPAREN M_INSTR {
+				WHILE M_JUMP M_INSTR LPAREN Exp RPAREN M_INSTR {
 											symbolTableManager.openWhileScope(); 
-											retType* exp = dynamic_cast<retType*>($4);
+											retType* exp = dynamic_cast<retType*>($5);
 											CheckType(exp->type, Type_::TYPE_BOOL);
+											JumpMarker* initialJump = dynamic_cast<JumpMarker*>($2);
+											Label* jumpLabel = dynamic_cast<Label*>($3);
+											codeBuff.bpatch(initialJump->nextList, jumpLabel->label);
 											string freshReg = RegisterGenerator::getRegister();
-											string check_if_exp_false = freshReg + " = icmp eq i32 0, " + exp->reg;
+											string check_if_exp_false = freshReg + " = icmp eq i1 0, " + exp->reg;
 											codeBuff.emit(check_if_exp_false);
 											string truncReg;
 											if(TYPE_BOOL != exp->type)
 											{											
 												truncReg = CodeGenerator::generateTruncRegisterCode(freshReg);
 											}
-											string branch_code = "br i1 " + truncReg + ", label @, label @";
-											int branch_line = codeBuff.emit(branch_code);
-											exp->trueList = codeBuff.makelist({branch_line, FIRST});
-											exp->falseList = codeBuff.makelist({branch_line, SECOND});
+											//string branch_code = "br i1 " + truncReg + ", label @, label @";
+											//int branch_line = codeBuff.emit(branch_code);
+											//exp->trueList = codeBuff.makelist({branch_line, FIRST});
+											//exp->falseList = codeBuff.makelist({branch_line, SECOND});
 										} 
 										Statement CLOSE_SCOPE	       						
 																{
 																	$$ = new StatementNode();
-																	StatementNode* statement = dynamic_cast<StatementNode*>($8);
-																	retType* exp = dynamic_cast<retType*>($4);
+																	StatementNode* statement = dynamic_cast<StatementNode*>($9);
+																	retType* exp = dynamic_cast<retType*>($5);
 																	StatementNode* while_statement = dynamic_cast<StatementNode*>($$);
-																	std::string exp_label = dynamic_cast<Label*>($2)->label;
-																	std::string statement_label = dynamic_cast<Label*>($6)->label;
+																	std::string exp_label = dynamic_cast<Label*>($3)->label;
+																	std::string statement_label = dynamic_cast<Label*>($7)->label;
 																	codeBuff.bpatch(exp->trueList, statement_label);
 																	codeBuff.bpatch(statement->nextList, exp_label);
 																	codeBuff.bpatch(statement->continueList, exp_label);
@@ -743,6 +754,9 @@ using namespace std;
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
+																	//result->reg = extendedReg;
+																	result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} |
@@ -762,6 +776,9 @@ using namespace std;
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
+																	//result->reg = extendedReg;
+																	result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} |
@@ -789,6 +806,9 @@ using namespace std;
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
+																	//result->reg = extendedReg;
+																	result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 
@@ -816,6 +836,9 @@ using namespace std;
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
+																	//result->reg = extendedReg;
+																	result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 
@@ -843,6 +866,9 @@ using namespace std;
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
+																	//result->reg = extendedReg;
+																	result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 
@@ -870,6 +896,9 @@ using namespace std;
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
+																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
+																	//result->reg = extendedReg;
+																	result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 

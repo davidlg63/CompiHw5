@@ -50,6 +50,8 @@ public:
 
     //generates code the truncs the register nd returns the new created register.
     static std::string generateTruncRegisterCode(const std::string& reg_to_trunc);
+
+    static std::string generateConvertFromi1Toi32(const std::string& reg);
 };
 
 
