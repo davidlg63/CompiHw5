@@ -187,12 +187,15 @@ void CodeGenerator::generateBoolExpressionBackPatchLabels(std::vector<std::pair<
      auto trueLabelList = CodeBuffer::makelist({trueLabelLine, FIRST});
      string trueLabel = codeBuffer.genLabel();
      int nextLabelAfterIfLine = codeBuffer.emit("br label @");
+     int falseLabelLine = codeBuffer.emit("br label @");
+     auto falseLabelList = CodeBuffer::makelist({falseLabelLine, FIRST});
      string falseLabel = codeBuffer.genLabel();
      int nextLabelAfterFalseLine = codeBuffer.emit("br label @");
      string nextLabel = codeBuffer.genLabel();
      auto nextLabelList = CodeBuffer::merge(CodeBuffer::makelist({nextLabelAfterIfLine, FIRST}),
                                             CodeBuffer::makelist({nextLabelAfterFalseLine,FIRST}));
      codeBuffer.bpatch(trueLabelList, trueLabel);
+     codeBuffer.bpatch(falseLabelList, falseLabel);
      codeBuffer.bpatch(nextLabelList, nextLabel);
      codeBuffer.emit(reg_to_assign +" = phi i32 [1" +", %" + trueLabel + "] , [0" + " , %" + falseLabel+"]");
      codeBuffer.bpatch(trueList, trueLabel);

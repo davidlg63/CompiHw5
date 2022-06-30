@@ -35,6 +35,7 @@ public:
     void openWhileScope();
     void openFuncScope();
     int getOffset();
+    int viewCurrentOffset();
     bool doesSymbolExists(Type_ type, const std::string& name);
     Type_ doesFunctionExist(const std::string& functionName, const std::vector<Type_> params);
     Type_ getFunctionReturnType(const std::string& functionName);

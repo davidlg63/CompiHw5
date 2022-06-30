@@ -54,6 +54,7 @@ struct expressionList : public SymbolBase
 struct Id : public SymbolBase
 {
     std::string name;
+    std::string reg;
     explicit Id(const char* val): name(std::string(val)){}
 };
 

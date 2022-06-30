@@ -304,19 +304,21 @@ using namespace std;
 															delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
 														} |
 														
-				AUTO ID ASSIGN Exp SC	                        {
+				AUTO ID 								{
+															$$ = new StatementNode();
+															Id* id = dynamic_cast<Id*>($2);
+															int offset = symbolTableManager.viewCurrentOffset();
+															string updatedReg = CodeGenerator::generateUpdateRegisterOnStackCode(offset, symbolTableManager.getStackPointer());
+															id->reg = updatedReg;
+														}
+														
+				ASSIGN Exp SC	                        {
 																	//BUG
 																	$$ = new StatementNode();
-																	retType* exp = dynamic_cast<retType*>($4);
+																	retType* exp = dynamic_cast<retType*>($5);
 																	Id* id = dynamic_cast<Id*>($2);
 																	CheckIfValidTypeForVar(exp->type);
 																	MakeDeclaration(exp->type, id->name);
-																	int offset = symbolTableManager.getVarOffset(id->name);
-																	if(offset >= 0)
-																	{
-																		string updatedReg = CodeGenerator::generateUpdateRegisterOnStackCode(offset, symbolTableManager.getStackPointer());
-																		symbolTableManager.assignRegisterToVar(id->name, updatedReg);
-																	}
 																	std::string freshReg = RegisterGenerator::getRegister();
 																	if(TYPE_BOOL == exp->type)
 																	{
@@ -326,9 +328,9 @@ using namespace std;
 																	{
 																		CodeGenerator::generateInitNewVar(freshReg, exp->reg);
 																	}
-																	//string llvmType = SymbolTableManager::ConvertTypeToLlvmType(exp->type);
-																	string assignment_code = "store i32 " + freshReg + ", i32* " + symbolTableManager.getVarRegister(id->name);
+																	string assignment_code = "store i32 " + freshReg + ", i32* " + id->reg;
                                                                     CodeBuffer::instance().emit(assignment_code);
+																	symbolTableManager.assignRegisterToVar(id->name, id->reg);
 																	delete exp; 
 																	delete id;
 																} |
@@ -342,7 +344,7 @@ using namespace std;
 																	string freshReg = RegisterGenerator::getRegister();
 																	if(TYPE_BOOL == exp->type)
 																	{
-																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, idReg);
+																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, freshReg);
 																	}
 																	else
 																	{

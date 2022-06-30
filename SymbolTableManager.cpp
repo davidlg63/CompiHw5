@@ -312,6 +312,7 @@ int SymbolTableManager::getVarOffset(const string& name) {
         }
         currentTable = currentTable->parent;
     }
+    return -1;
 }
 
 std::string SymbolTableManager::getStackPointer() {
@@ -338,6 +339,10 @@ std::string SymbolTableManager::ConvertTypeToLlvmType(Type_ type) {
 
 void SymbolTableManager::setStackPointer(const std::string& sp) {
     stackPointer = sp;
+}
+
+int SymbolTableManager::viewCurrentOffset() {
+    return _offsetStack.top();
 }
 
 
