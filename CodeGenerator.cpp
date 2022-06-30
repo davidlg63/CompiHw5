@@ -138,8 +138,9 @@ void CodeGenerator::generateDivideByZeroErrorCheckCodeAndExitIfYes(const retType
 
      instance.emit("call void @exit(i32 1)");
 
+     int dummyBranchToNotEq = instance.emit("br label @");
      string ifNotEqual = instance.genLabel();
-
+     instance.bpatch(CodeBuffer::makelist({dummyBranchToNotEq, FIRST}), ifNotEqual);
      instance.bpatch(CodeBuffer::makelist({loc, FIRST}), ifEqual);
      instance.bpatch(CodeBuffer::makelist({loc, SECOND}), ifNotEqual);
 }
