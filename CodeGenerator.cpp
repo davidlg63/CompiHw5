@@ -10,28 +10,32 @@ using namespace std;
 
  void CodeGenerator::generateAdditionCode(const retType* firstNum, const retType* secondNum, const retType* result, const string& regNum)
 {
-     DoAction(regNum, firstNum->reg, secondNum->reg, "add");
+     DoAction(regNum, firstNum, secondNum, "add");
 }
 
 void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retType* secondNum, const retType* result, const string& regNum)
 {
-     DoAction(regNum, firstNum->reg, secondNum->reg, "sub");
+     DoAction(regNum, firstNum, secondNum, "sub");
 }
 
 void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
 {
      generateDivideByZeroErrorCheckCodeAndExitIfYes(secondNum);
-     DoAction(regNum, firstNum->reg, secondNum->reg, "sdiv");
+     DoAction(regNum, firstNum, secondNum, "sdiv");
 }
 
 void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
 {
-     DoAction(regNum, firstNum->reg, secondNum->reg, "mul");
+    DoAction(regNum,firstNum, secondNum, "mul");
 }
 
-void CodeGenerator::DoAction(const string& resultReg, const string& firstReg, const string& secondReg, const string& action)
+void CodeGenerator::DoAction(const string& resultReg, const retType* firstReg, const retType* secondReg, const string& action)
 {
-    string code = resultReg + " = "+ action + " i32 " + firstReg + ", " + secondReg;
+    string code = resultReg + " = "+ action + " i32 " + firstReg->reg + ", " + secondReg->reg;
+    if(TYPE_BYTE == firstReg->type && TYPE_BYTE == secondReg->type)
+    {
+        generateTruncRegisterCode(resultReg);
+    }
     CodeBuffer::instance().emit(code);
 }
 
@@ -225,5 +229,13 @@ std::string CodeGenerator::generateConvertFromi1Toi32(const std::string& reg) {
 void CodeGenerator::generateDivideByZeroErrorMessageDefinition() {
     CodeBuffer::instance().emitGlobal
     (R"(@.divideByZeroErrorMessage = constant [23 x i8] c"Error division by zero\00")");
+}
+
+void CodeGenerator::generateBoolExpressionBranch(retType *exp) {
+     string condReg = RegisterGenerator::getRegister();
+    CodeBuffer::instance().emit(condReg + " = icmp eq i32 " + exp->reg + " ,1");
+    int loc = CodeBuffer::instance().emit("br i1 "+ condReg + ", label @ , label @");
+    exp->trueList = CodeBuffer::makelist({loc,BranchLabelIndex::FIRST});
+    exp->falseList = CodeBuffer::makelist({loc,BranchLabelIndex::SECOND});
 }
 

@@ -22,7 +22,7 @@ public:
     static void
     generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const std::string& regNum);
 
-    static void DoAction(const string& resultReg, const string& firstReg, const string& secondReg, const std::string& action);
+    static void DoAction(const string& resultReg, const retType* firstReg, const retType* secondReg, const std::string& action);
 
     //Code that assigns value to register reg
     static void generateIntByteCreationCode(const std::string &reg, const std::string &value);
@@ -54,6 +54,8 @@ public:
     static std::string generateConvertFromi1Toi32(const std::string& reg);
 
     static void generateDivideByZeroErrorMessageDefinition();
+
+    static void generateBoolExpressionBranch(retType* exp);
 };
 
 
