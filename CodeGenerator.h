@@ -11,16 +11,16 @@ class CodeGenerator {
 
 public:
     static void
-    generateAdditionCode(const retType *firstNum, const retType *secondNum, const retType *result, const std::string& regNum);
+    generateAdditionCode(const retType *firstNum, const retType *secondNum, const retType *result,  const std::string& regNum);
 
     static void
-    generateSubtractionCode(const retType *firstNum, const retType *secondNum, const retType *result, const std::string& regNum);
+    generateSubtractionCode(const retType *firstNum, const retType *secondNum, const retType *result,  const std::string& regNum);
 
     static void
-    generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result, const std::string& regNum);
+    generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result,  const std::string& regNum);
 
     static void
-    generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const std::string& regNum);
+    generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result,  const std::string& regNum);
 
     static void DoAction(const string& resultReg, const retType* firstReg, const retType* secondReg, const std::string& action);
 

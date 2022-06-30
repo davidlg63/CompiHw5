@@ -31,12 +31,12 @@ void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const re
 
 void CodeGenerator::DoAction(const string& resultReg, const retType* firstReg, const retType* secondReg, const string& action)
 {
-    string code = resultReg + " = "+ action + " i32 " + firstReg->reg + ", " + secondReg->reg;
+     string code = resultReg + " = " + action + " i32 " + firstReg->reg + ", " + secondReg->reg;
+     CodeBuffer::instance().emit(code);
     if(TYPE_BYTE == firstReg->type && TYPE_BYTE == secondReg->type)
     {
         generateTruncRegisterCode(resultReg);
     }
-    CodeBuffer::instance().emit(code);
 }
 
 void CodeGenerator::generateIntByteCreationCode(const string &reg, const string &value) {

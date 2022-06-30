@@ -580,7 +580,8 @@ using namespace std;
                                                                 delete dynamic_cast<retType*>($2); }|
 																
 														
-         Exp BINOP_PLUS Exp	                            		{$$ = new retType(); 
+         Exp BINOP_PLUS Exp	                            		{
+																$$ = new retType(); 
 																retType* result = dynamic_cast<retType*>($$);
 																retType* first = dynamic_cast<retType*>($1);
 																retType* second = dynamic_cast<retType*>($3);
@@ -616,23 +617,27 @@ using namespace std;
 																	}
 																	result->reg = RegisterGenerator::getRegister();
 																	CodeGenerator::generateSubtractionCode(first, second, result, result->reg);
-																	delete first; 
-																	delete second;
+																	delete first; delete second;
 																} |
 
 		 Exp BINOP_MUL Exp	                                	{
-																$$ = new retType(); 
-																retType* result = dynamic_cast<retType*>($$);
-																retType* first = dynamic_cast<retType*>($1);
-																retType* second = dynamic_cast<retType*>($3);
-																checkIfNumType(first->type);
-																checkIfNumType(second->type);
-                                                                if(second->type==Type_::TYPE_INT)
-                                                                {result->type=Type_::TYPE_INT;}
-                                                                else {result->type=first->type;}
-																result->reg = RegisterGenerator::getRegister();
-																CodeGenerator::generateMultiplicationCode(first, second, result, result->reg);
-                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
+																	$$ = new retType(); 
+																	retType* result = dynamic_cast<retType*>($$);
+																	retType* first = dynamic_cast<retType*>($1);
+																	retType* second = dynamic_cast<retType*>($3);
+																	checkIfNumType(first->type);
+																	checkIfNumType(second->type);
+																	if(second->type==Type_::TYPE_INT)
+																	{
+																		result->type=Type_::TYPE_INT;
+																	}
+																	else 
+																	{
+																		result->type=first->type;
+																	}
+																	result->reg = RegisterGenerator::getRegister();
+																	CodeGenerator::generateMultiplicationCode(first, second, result, result->reg);
+																	delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 																
 		 Exp BINOP_DIV Exp	                                	{
@@ -741,30 +746,52 @@ using namespace std;
 																	delete exp;
 																} |
 																
-         Exp AND M_INSTR Exp 	                                {
+         Exp AND 										{
+															retType* exp1 = dynamic_cast<retType*>($1);
+															CheckType(exp1->type, Type_::TYPE_BOOL);
+															if(exp1->reg != "")
+															{
+																		CodeGenerator::generateBoolExpressionBranch(exp1);
+															}
+														}
+		 M_INSTR Exp 	                                {
 																	$$ = new retType(); 
 																	retType* result = dynamic_cast<retType*>($$);
 																	retType* exp1 = dynamic_cast<retType*>($1);
-																	retType* exp2 = dynamic_cast<retType*>($4);
-																	CheckType(exp1->type, Type_::TYPE_BOOL);
+																	retType* exp2 = dynamic_cast<retType*>($5);
 																	CheckType(exp2->type, Type_::TYPE_BOOL);
 																	result->type = Type_::TYPE_BOOL;
-																	codeBuff.bpatch(exp1->trueList, dynamic_cast<Label*>($3)->label);
+																	if(exp2->reg != "")
+																	{
+																		CodeGenerator::generateBoolExpressionBranch(exp2);
+																	}
+																	codeBuff.bpatch(exp1->trueList, dynamic_cast<Label*>($4)->label);
 																	result->trueList = exp2->trueList;
 																	result->falseList = codeBuff.merge(exp1->falseList, exp2->falseList);
 																	delete exp1; 
 																	delete exp2;
 																} |
 																
-         Exp OR M_INSTR Exp		                                {
+         Exp OR 											{
+																retType* exp1 = dynamic_cast<retType*>($1);
+																CheckType(exp1->type, Type_::TYPE_BOOL);
+																if(exp1->reg != "")
+																{
+																	CodeGenerator::generateBoolExpressionBranch(exp1);
+																}
+															}
+		 M_INSTR Exp		                                {
 																	$$ = new retType();
 																	retType* result = dynamic_cast<retType*>($$);
 																	retType* exp1 = dynamic_cast<retType*>($1);
-																	retType* exp2 = dynamic_cast<retType*>($4);
-																	CheckType(exp1->type, Type_::TYPE_BOOL);
+																	retType* exp2 = dynamic_cast<retType*>($5);
 																	CheckType(exp2->type, Type_::TYPE_BOOL);
 																	result->type = Type_::TYPE_BOOL;
-																	codeBuff.bpatch(exp1->falseList, dynamic_cast<Label*>($3)->label);
+																	if(exp2->reg != "")
+																	{
+																		CodeGenerator::generateBoolExpressionBranch(exp2);
+																	}
+																	codeBuff.bpatch(exp1->falseList, dynamic_cast<Label*>($4)->label);
 																	result->falseList = exp2->falseList;
 																	result->trueList = codeBuff.merge(exp1->trueList, exp2->trueList);
 																	delete exp1;
