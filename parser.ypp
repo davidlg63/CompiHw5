@@ -164,10 +164,12 @@ using namespace std;
 
 
     Formals: /*epsilon*/	                                    {$$ = new paramList();} |
-             FormalsList	                                    {$$ = new paramList();
-                                                                dynamic_cast<paramList*>($$)-> names_in_list = dynamic_cast<paramList*>($1)->names_in_list;
-                                                                dynamic_cast<paramList*>($$) -> types_in_list = dynamic_cast<paramList*>($1) -> types_in_list;
-                                                                delete dynamic_cast<retType*>($1);}
+             FormalsList	                                    {
+																	$$ = new paramList();
+																	dynamic_cast<paramList*>($$)-> names_in_list = dynamic_cast<paramList*>($1)->names_in_list;
+																	dynamic_cast<paramList*>($$) -> types_in_list = dynamic_cast<paramList*>($1) -> types_in_list;
+																	delete dynamic_cast<retType*>($1);
+																}
 			 ;														
 
     FormalsList: FormalDecl	                                     {
