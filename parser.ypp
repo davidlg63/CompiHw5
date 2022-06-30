@@ -558,20 +558,30 @@ using namespace std;
 																{
 																	dynamic_cast<retType*>($$)->type = first->type;
 																}
-																CodeGenerator::generateAdditionCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
+																result->reg = RegisterGenerator::getRegister();
+																CodeGenerator::generateAdditionCode(first, second, dynamic_cast<retType*>($$), result->reg);
                                                                 delete first; delete second;
 																} |
 																
-		Exp BINOP_MINUS Exp	                            		{$$ = new retType(); 
-																retType* first = dynamic_cast<retType*>($1);
-																retType* second = dynamic_cast<retType*>($3);
-																checkIfNumType(first->type);
-																checkIfNumType(second->type);
-                                                                if(second->type==Type_::TYPE_INT)
-                                                                {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
-                                                                else {dynamic_cast<retType*>($$)->type = first->type;}
-																CodeGenerator::generateSubtractionCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
-                                                                delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
+		Exp BINOP_MINUS Exp	                            		{
+																	$$ = new retType(); 
+																	retType* result = dynamic_cast<retType*>($$);
+																	retType* first = dynamic_cast<retType*>($1);
+																	retType* second = dynamic_cast<retType*>($3);
+																	checkIfNumType(first->type);
+																	checkIfNumType(second->type);
+																	if(second->type==Type_::TYPE_INT)
+																	{
+																		result->type = Type_::TYPE_INT;
+																	}
+																	else 
+																	{
+																		result->type = first->type;
+																	}
+																	result->reg = RegisterGenerator::getRegister();
+																	CodeGenerator::generateSubtractionCode(first, second, result, result->reg);
+																	delete first; 
+																	delete second;
 																} |
 
 		 Exp BINOP_MUL Exp	                                	{
@@ -583,7 +593,8 @@ using namespace std;
                                                                 if(second->type==Type_::TYPE_INT)
                                                                 {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
                                                                 else {dynamic_cast<retType*>($$)->type=first->type;}
-																CodeGenerator::generateMultiplicationCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
+																result->reg = RegisterGenerator::getRegister();
+																CodeGenerator::generateMultiplicationCode(first, second, dynamic_cast<retType*>($$), result->reg);
                                                                 delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 																
@@ -596,7 +607,8 @@ using namespace std;
                                                                 if(second->type==Type_::TYPE_INT)
                                                                 {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
                                                                 else {dynamic_cast<retType*>($$)->type=first->type;}
-																CodeGenerator::generateDivisionCode(first, second, dynamic_cast<retType*>($$), RegisterGenerator::getRegister());
+																result->reg = RegisterGenerator::getRegister();
+																CodeGenerator::generateDivisionCode(first, second, dynamic_cast<retType*>($$), result->reg);
                                                                 delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 
