@@ -788,7 +788,7 @@ using namespace std;
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
 																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
 																	//result->reg = extendedReg;
-																	result->reg = freshReg;
+																	//result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} |
@@ -810,7 +810,7 @@ using namespace std;
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
 																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
 																	//result->reg = extendedReg;
-																	result->reg = freshReg;
+																	//result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} |
@@ -870,7 +870,7 @@ using namespace std;
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
 																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
 																	//result->reg = extendedReg;
-																	result->reg = freshReg;
+																	//result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 
@@ -900,7 +900,7 @@ using namespace std;
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
 																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
 																	//result->reg = extendedReg;
-																	result->reg = freshReg;
+																	//result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 
@@ -930,7 +930,7 @@ using namespace std;
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
 																	//string extendedReg = CodeGenerator::generateConvertFromi1Toi32(freshReg);
 																	//result->reg = extendedReg;
-																	result->reg = freshReg;
+																	//result->reg = freshReg;
 																	delete exp1;
 																	delete exp2;
 																} | 
