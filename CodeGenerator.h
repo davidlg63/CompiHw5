@@ -39,7 +39,7 @@ public:
 
     static void generateStringCode(retType* result_exp, const String* str);
 
-    static void generateFunctionCallCode(const call2Fun* func, const Id* func_id, const expressionList* params);
+    static std::string generateFunctionCallCode(const call2Fun* func, const Id* func_id, const expressionList* params);
 
     static std::string generateUpdateRegisterOnStackCode(int offset, const std::string& stackPointer);
 

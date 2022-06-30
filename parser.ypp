@@ -482,7 +482,7 @@ using namespace std;
 																	func->name = func_id->name;
 																	func->expList = params->exprList;
 																	func->type = symbolTableManager.getFunctionReturnType(func_id->name);
-																	CodeGenerator::generateFunctionCallCode(func, func_id, params);
+																	func->reg = CodeGenerator::generateFunctionCallCode(func, func_id, params);
 																	
 																	delete func_id; 
 																	delete params;
@@ -546,20 +546,21 @@ using namespace std;
 																
 														
          Exp BINOP_PLUS Exp	                            		{$$ = new retType(); 
+																retType* result = dynamic_cast<retType*>($$);
 																retType* first = dynamic_cast<retType*>($1);
 																retType* second = dynamic_cast<retType*>($3);
 																checkIfNumType(first->type);
 																checkIfNumType(second->type);
                                                                 if(second->type == Type_::TYPE_INT)
                                                                 {
-																	dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;
+																	result->type = Type_::TYPE_INT;
 																}
                                                                 else 
 																{
-																	dynamic_cast<retType*>($$)->type = first->type;
+																	result->type = first->type;
 																}
 																result->reg = RegisterGenerator::getRegister();
-																CodeGenerator::generateAdditionCode(first, second, dynamic_cast<retType*>($$), result->reg);
+																CodeGenerator::generateAdditionCode(first, second, result, result->reg);
                                                                 delete first; delete second;
 																} |
 																
@@ -586,29 +587,31 @@ using namespace std;
 
 		 Exp BINOP_MUL Exp	                                	{
 																$$ = new retType(); 
+																retType* result = dynamic_cast<retType*>($$);
 																retType* first = dynamic_cast<retType*>($1);
 																retType* second = dynamic_cast<retType*>($3);
 																checkIfNumType(first->type);
 																checkIfNumType(second->type);
                                                                 if(second->type==Type_::TYPE_INT)
-                                                                {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
-                                                                else {dynamic_cast<retType*>($$)->type=first->type;}
+                                                                {result->type=Type_::TYPE_INT;}
+                                                                else {result->type=first->type;}
 																result->reg = RegisterGenerator::getRegister();
-																CodeGenerator::generateMultiplicationCode(first, second, dynamic_cast<retType*>($$), result->reg);
+																CodeGenerator::generateMultiplicationCode(first, second, result, result->reg);
                                                                 delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 																
 		 Exp BINOP_DIV Exp	                                	{
 																$$ = new retType(); 
+																retType* result = dynamic_cast<retType*>($$);
 																retType* first = dynamic_cast<retType*>($1);
 																retType* second = dynamic_cast<retType*>($3);
 																checkIfNumType(first->type);
 																checkIfNumType(second->type);
                                                                 if(second->type==Type_::TYPE_INT)
-                                                                {dynamic_cast<retType*>($$)->type=Type_::TYPE_INT;}
-                                                                else {dynamic_cast<retType*>($$)->type=first->type;}
+                                                                {result->type=Type_::TYPE_INT;}
+                                                                else {result->type=first->type;}
 																result->reg = RegisterGenerator::getRegister();
-																CodeGenerator::generateDivisionCode(first, second, dynamic_cast<retType*>($$), result->reg);
+																CodeGenerator::generateDivisionCode(first, second, result, result->reg);
                                                                 delete dynamic_cast<retType*>($1); delete dynamic_cast<retType*>($3);
 																} |
 

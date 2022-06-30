@@ -30,7 +30,7 @@ void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const re
 
 void CodeGenerator::DoAction(const string& resultReg, const string& firstReg, const string& secondReg, const string& action)
 {
-    string code = resultReg + " = "+ action + " i32 " +firstReg + ", " + secondReg;
+    string code = resultReg + " = "+ action + " i32 " + firstReg + ", " + secondReg;
     CodeBuffer::instance().emit(code);
 }
 
@@ -143,16 +143,17 @@ void CodeGenerator::generateDivideByZeroErrorCheckCodeAndExitIfYes(const retType
      instance.bpatch(CodeBuffer::makelist({loc, SECOND}), ifNotEqual);
 }
 
-void CodeGenerator::generateFunctionCallCode(const call2Fun *func, const Id *func_id, const expressionList *params) {
+string CodeGenerator::generateFunctionCallCode(const call2Fun *func, const Id *func_id, const expressionList *params) {
     string func_type = SymbolTableManager::ConvertTypeToLlvmType(func->type);
-    string code;
+    string code, func_reg;
     if (TYPE_VOID == func->type)
     {
         code = "call " + func_type + " @" + func->name + "(";
     }
     else
     {
-        code = RegisterGenerator::getRegister() + " = " + "call " + func_type + " @" + func->name + "(";
+        func_reg = RegisterGenerator::getRegister();
+        code = func_reg + " = " + "call " + func_type + " @" + func->name + "(";
     }
     for(int i = 0; i < params->exprList.size(); i++)
     {
@@ -165,6 +166,7 @@ void CodeGenerator::generateFunctionCallCode(const call2Fun *func, const Id *fun
     }
     code += ")";
     CodeBuffer::instance().emit(code);
+    return func_reg;
 }
 
 string CodeGenerator::generateUpdateRegisterOnStackCode(const int offset, const string& stackPointer) {
