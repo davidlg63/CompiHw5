@@ -449,7 +449,7 @@ using namespace std;
 																	codeBuff.bpatch(statement->nextList, exp_label);
 																	codeBuff.bpatch(statement->continueList, exp_label);
 																	while_statement->nextList = codeBuff.merge(exp->falseList, statement->breakList);
-																	codeBuff.emit("br label " + exp_label);
+																	codeBuff.emit("br label %" + exp_label);
 																	
 																	delete exp;
 																	delete statement;
@@ -918,13 +918,13 @@ using namespace std;
 	Bool_Exp: Exp 	{
 						retType* exp = dynamic_cast<retType*>($1);
 						CheckType(exp->type, Type_::TYPE_BOOL);
-						if(exp->reg != "")
+						/*if(exp->reg != "")
 						{
 							string truncReg = CodeGenerator::generateTruncRegisterCode(exp->reg);
 							int branch_line = codeBuff.emit("br i1 " + truncReg + ", label @, label @");
 							exp->trueList = codeBuff.makelist({branch_line, FIRST});
 							exp->falseList = codeBuff.makelist({branch_line, SECOND});
-						}
+						}*/
 						$$ = $1;
 						symbolTableManager.openScope();
 					};
