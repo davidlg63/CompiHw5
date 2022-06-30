@@ -130,7 +130,7 @@ void CodeGenerator::generateDivideByZeroErrorCheckCodeAndExitIfYes(const retType
 
      string divideByZeroMsgReg = RegisterGenerator::getRegister();
      string getDivideByZeroMsgReg =
-             divideByZeroMsgReg + " = getelementptr [23 x i8], [23 x i8]* @.divideByZeroErrorMessage, i32 0, i32 0\")";
+             divideByZeroMsgReg + " = getelementptr [23 x i8], [23 x i8]* @.divideByZeroErrorMessage, i32 0, i32 0)";
      instance.emit(getDivideByZeroMsgReg);
 
      string callPrint = "call void @print(i8* " + divideByZeroMsgReg + ")";
