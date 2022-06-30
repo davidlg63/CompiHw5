@@ -546,16 +546,20 @@ using namespace std;
 																	result->insertRegister(exp->reg);
 																	delete exp;
 																} |
-		   	 Exp COMMA ExpList	                                {
+																
+		   	 Exp COMMA 									{
+															retType* exp = dynamic_cast<retType*>($1);
+															if(TYPE_BOOL == exp->type && "" == exp->reg)
+															{
+																exp->reg = RegisterGenerator::getRegister();
+																CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, exp->reg);
+															}
+														}
+			 ExpList	                                {
 																	$$ = new expressionList();
 																	expressionList* result = dynamic_cast<expressionList*>($$);
 																	retType* exp = dynamic_cast<retType*>($1);
-																	expressionList* expList = dynamic_cast<expressionList*>($3);
-																	if(TYPE_BOOL == exp->type && "" == exp->reg)
-																	{
-																		exp->reg = RegisterGenerator::getRegister();
-																		CodeGenerator::generateBoolExpressionBackPatchLabels(exp->trueList, exp->falseList, exp->reg);
-																	}
+																	expressionList* expList = dynamic_cast<expressionList*>($4);
 																	result->exprList = expList->exprList;
 																	result->insertElement(exp->type);
 																	result->registersList = expList->registersList;
@@ -724,6 +728,7 @@ using namespace std;
 																	retType* exp = dynamic_cast<retType*>($2);
 																	CheckType(exp->type, Type_::TYPE_BOOL);
 																	ret->type = Type_::TYPE_BOOL;
+																	ret->reg = exp->reg;
 																	ret->trueList = exp->falseList;
 																	ret->falseList = exp->trueList;
 																	delete dynamic_cast<retType*>($2);
@@ -940,10 +945,11 @@ using namespace std;
 						CheckType(exp->type, Type_::TYPE_BOOL);
 						if(exp->reg != "")
 						{
+							codeBuff.emit("debug");
 							string truncReg = CodeGenerator::generateTruncRegisterCode(exp->reg);
 							int branch_line = codeBuff.emit("br i1 " + truncReg + ", label @, label @");
-							exp->trueList = codeBuff.makelist({branch_line, FIRST});
-							exp->falseList = codeBuff.makelist({branch_line, SECOND});
+							exp->trueList = CodeBuffer::merge(CodeBuffer::makelist({branch_line, FIRST}), exp->trueList);
+							exp->falseList = CodeBuffer::merge(CodeBuffer::makelist({branch_line, SECOND}), exp->falseList);
 						}
 						$$ = $1;
 						symbolTableManager.openScope();
