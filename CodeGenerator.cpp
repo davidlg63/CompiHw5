@@ -8,34 +8,38 @@ using namespace std;
 
 
 
- void CodeGenerator::generateAdditionCode(const retType* firstNum, const retType* secondNum, const retType* result, const string& regNum)
+ void CodeGenerator::generateAdditionCode(const retType* firstNum, const retType* secondNum, const retType* result,  string& regNum)
 {
      DoAction(regNum, firstNum, secondNum, "add");
 }
 
-void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retType* secondNum, const retType* result, const string& regNum)
+void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retType* secondNum, const retType* result,  string& regNum)
 {
      DoAction(regNum, firstNum, secondNum, "sub");
 }
 
-void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
+void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result,  string& regNum)
 {
      generateDivideByZeroErrorCheckCodeAndExitIfYes(secondNum);
      DoAction(regNum, firstNum, secondNum, "sdiv");
 }
 
-void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
+void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result,  string& regNum)
 {
     DoAction(regNum,firstNum, secondNum, "mul");
 }
 
-void CodeGenerator::DoAction(const string& resultReg, const retType* firstReg, const retType* secondReg, const string& action)
+void CodeGenerator::DoAction( string& resultReg, const retType* firstReg, const retType* secondReg, const string& action)
 {
      string code = resultReg + " = " + action + " i32 " + firstReg->reg + ", " + secondReg->reg;
      CodeBuffer::instance().emit(code);
     if(TYPE_BYTE == firstReg->type && TYPE_BYTE == secondReg->type)
     {
-        generateTruncRegisterCode(resultReg);
+        resultReg = generateTruncRegisterToi8Code(resultReg);
+        string extendedResult = RegisterGenerator::getRegister();
+        code = extendedResult + " = zext i8 " + resultReg + " to i32";
+        CodeBuffer::instance().emit(code);
+        resultReg = extendedResult;
     }
 }
 
@@ -215,6 +219,13 @@ void CodeGenerator::generateInitNewVar(const string& new_reg, const string& reg)
 string CodeGenerator::generateTruncRegisterCode(const string &reg_to_trunc) {
     string truncReg = RegisterGenerator::getRegister();
     string truncCode = truncReg + " =  trunc i32 " +  reg_to_trunc+ " to i1";
+    CodeBuffer::instance().emit(truncCode);
+    return truncReg;
+}
+
+string CodeGenerator::generateTruncRegisterToi8Code(const string &reg_to_trunc) {
+    string truncReg = RegisterGenerator::getRegister();
+    string truncCode = truncReg + " =  trunc i32 " +  reg_to_trunc+ " to i8";
     CodeBuffer::instance().emit(truncCode);
     return truncReg;
 }
