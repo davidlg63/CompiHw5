@@ -8,23 +8,23 @@ using namespace std;
 
 
 
- void CodeGenerator::generateAdditionCode(const retType* firstNum, const retType* secondNum, const retType* result,  string& regNum)
+ void CodeGenerator::generateAdditionCode(const retType* firstNum, const retType* secondNum,  retType* result,  string& regNum)
 {
      DoAction(regNum, firstNum, secondNum, "add");
 }
 
-void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retType* secondNum, const retType* result,  string& regNum)
+void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retType* secondNum,  retType* result,  string& regNum)
 {
      DoAction(regNum, firstNum, secondNum, "sub");
 }
 
-void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result,  string& regNum)
+void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum,  retType *result,  string& regNum)
 {
      generateDivideByZeroErrorCheckCodeAndExitIfYes(secondNum);
      DoAction(regNum, firstNum, secondNum, "sdiv");
 }
 
-void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum, const retType *result,  string& regNum)
+void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const retType *secondNum,  retType *result,  string& regNum)
 {
     DoAction(regNum,firstNum, secondNum, "mul");
 }

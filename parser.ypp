@@ -274,6 +274,7 @@ using namespace std;
 															retType* varType = dynamic_cast<retType*>($1);
 															Id* id = dynamic_cast<Id*>($2);
 															checkIfVarExists(varType->type, id->name);
+															MakeDeclaration(varType->type, id->name);
 															int offset = symbolTableManager.getVarOffset(id->name);
 															if(offset >= 0)
 															{
@@ -281,13 +282,12 @@ using namespace std;
 																symbolTableManager.assignRegisterToVar(id->name, updatedReg);
 															}
 														}					
-				ASSIGN Exp SC	                        { 
+				ASSIGN Exp SC	                        {
 															$$ = new StatementNode();
 															retType* varType = dynamic_cast<retType*>($1);
 															retType* exp = dynamic_cast<retType*>($5);
 															Id* id = dynamic_cast<Id*>($2);
 															CheckType(varType->type, exp->type);
-															MakeDeclaration(varType->type, id->name);
 															std::string freshReg = RegisterGenerator::getRegister();
 															//symbolTableManager.assignRegisterToVar(id->name, RegisterGenerator::getRegister());
 															if(TYPE_BOOL == exp->type && exp->reg == "")
@@ -301,7 +301,7 @@ using namespace std;
 															//string llvmTypeOfVar = SymbolTableManager::ConvertTypeToLlvmType(varType->type);
 															string assignment_code = "store i32 " + freshReg + ", i32* " + symbolTableManager.getVarRegister(id->name);
                                                             CodeBuffer::instance().emit(assignment_code);
-															delete dynamic_cast<retType*>($1); delete dynamic_cast<Id*>($2); delete dynamic_cast<retType*>($4);
+															delete varType; delete id; delete exp;
 														} |
 														
 				AUTO ID 								{
