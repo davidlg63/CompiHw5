@@ -470,37 +470,39 @@ using namespace std;
 																	codeBuff.bpatch(statement->continueList, exp_label);
 																	while_statement->nextList = codeBuff.merge(exp->falseList, statement->breakList);
 																	codeBuff.emit("br label %" + exp_label);
-																	
 																	delete exp;
 																	delete statement;
 																} |
 				
-				BREAK SC	   
-																{
+				BREAK SC M_JUMP	   									{
+																	
 																	if (!(symbolTableManager.isWhileScoped()))
 																	{
 																		output::errorUnexpectedBreak(yylineno);
 																		exit(1);
 																	}
-																	StatementNode* breakStatement = dynamic_cast<StatementNode*>($1);
-																	int next_line = codeBuff.emit("br label @");
-																	breakStatement->nextList = codeBuff.makelist({next_line, FIRST});
+																	
 																	$$ = new StatementNode();
-																	dynamic_cast<StatementNode*>($$)->breakList = breakStatement->nextList;
-																	delete breakStatement;
+																	StatementNode* breakStatement = dynamic_cast<StatementNode*>($$);
+																	JumpMarker* jump = dynamic_cast<JumpMarker*>($3);
+																	//int next_line = codeBuff.emit("br label @");
+																	//breakStatement->nextList = codeBuff.makelist({next_line, FIRST});
+																	breakStatement->breakList = jump->nextList;
+																	delete jump;
 																} |
 																																														
-				CONTINUE SC	                                    {																																															if (!symbolTableManager.isWhileScoped()) 
+				CONTINUE SC	M_JUMP                              {																																															if (!symbolTableManager.isWhileScoped()) 
 																	{
 																		output::errorUnexpectedContinue(yylineno); 
 																		exit(1);
 																	}
-																	StatementNode* contStatement = dynamic_cast<StatementNode*>($1);
-																	int next_line = codeBuff.emit("br label @");
-																	contStatement->nextList = codeBuff.makelist({next_line, FIRST});
 																	$$ = new StatementNode();
-																	dynamic_cast<StatementNode*>($$)->continueList = contStatement->nextList;
-																	delete contStatement;
+																	StatementNode* contStatement = dynamic_cast<StatementNode*>($$);
+																	JumpMarker* jump = dynamic_cast<JumpMarker*>($3);
+																	//int next_line = codeBuff.emit("br label @");
+																	//contStatement->nextList = codeBuff.makelist({next_line, FIRST});
+																	contStatement->continueList = jump->nextList;
+																	delete jump;
 																}
 				;
 				
