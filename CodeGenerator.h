@@ -47,6 +47,9 @@ public:
                                                       std::vector<std::pair<int, BranchLabelIndex>>& falseList,
                                                       const std::string& reg_to_assign);
     static void generateInitNewVar(const std::string& new_reg, const std::string& reg);
+
+    //generates code the truncs the register nd returns the new created register.
+    static std::string generateTruncRegisterCode(const std::string& reg_to_trunc);
 };
 
 

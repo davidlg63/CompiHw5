@@ -322,7 +322,7 @@ std::string SymbolTableManager::ConvertTypeToLlvmType(Type_ type) {
     switch (type)
     {
         case(Type_::TYPE_BOOL):
-            return  "i32";
+            return  "i1";
         case(Type_::TYPE_VOID):
             return  "void";
         case(Type_::TYPE_INT):

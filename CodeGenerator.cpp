@@ -14,7 +14,7 @@ using namespace std;
     if (firstNum->type == Type_::TYPE_INT && secondNum->type ==Type_::TYPE_BYTE)
     {
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,firstNum->reg, reg2Int,  "add");
 
@@ -22,7 +22,7 @@ using namespace std;
     else if (firstNum->type == Type_::TYPE_BYTE  && secondNum->type ==Type_::TYPE_INT)
     {
         string reg1Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, secondNum->reg, "add");
     }
@@ -30,9 +30,9 @@ using namespace std;
     {
         string reg1Int = RegisterGenerator::getRegister();
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
-        castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, reg2Int, "add");
     }
@@ -46,7 +46,7 @@ void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retTy
     if (firstNum->type == Type_::TYPE_INT && secondNum->type ==Type_::TYPE_BYTE)
     {
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,firstNum->reg, reg2Int,  "sub");
 
@@ -54,7 +54,7 @@ void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retTy
     else if (firstNum->type == Type_::TYPE_BYTE  && secondNum->type ==Type_::TYPE_INT)
     {
         string reg1Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, secondNum->reg, "sub");;
     }
@@ -62,9 +62,9 @@ void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retTy
     {
         string reg1Int = RegisterGenerator::getRegister();
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
-        castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, reg2Int, "sub");
     }
@@ -74,13 +74,12 @@ void CodeGenerator::generateSubtractionCode(const retType* firstNum, const retTy
 
 void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType *secondNum, const retType *result, const string& regNum)
 {
-    /************************************ add devide by zero error***********************************/
     CodeGenerator::generateDivideByZeroErrorCheckCodeAndExitIfYes(secondNum);
     string code;
     if (firstNum->type == Type_::TYPE_INT && secondNum->type ==Type_::TYPE_BYTE)
     {
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,firstNum->reg, reg2Int,  "sdiv");
 
@@ -88,7 +87,7 @@ void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType 
     else if (firstNum->type == Type_::TYPE_BYTE  && secondNum->type ==Type_::TYPE_INT)
     {
         string reg1Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, secondNum->reg, "sdiv");
     }
@@ -96,9 +95,9 @@ void CodeGenerator::generateDivisionCode(const retType *firstNum, const retType 
     {
         string reg1Int = RegisterGenerator::getRegister();
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
-        castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, reg2Int, "sdiv");
     }
@@ -112,7 +111,7 @@ void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const re
     if (firstNum->type == Type_::TYPE_INT && secondNum->type ==Type_::TYPE_BYTE)
     {
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,firstNum->reg, reg2Int,  "mul");
 
@@ -120,7 +119,7 @@ void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const re
     else if (firstNum->type == Type_::TYPE_BYTE  && secondNum->type ==Type_::TYPE_INT)
     {
         string reg1Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, secondNum->reg, "mul");
     }
@@ -128,9 +127,9 @@ void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const re
     {
         string reg1Int = RegisterGenerator::getRegister();
         string reg2Int = RegisterGenerator::getRegister();
-        string castCode = reg1Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        string castCode = reg1Int + " = zext i8 " + firstNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
-        castCode = reg2Int + " = zext i8 %t" + secondNum->reg +" to i32";
+        castCode = reg2Int + " = zext i8 " + secondNum->reg +" to i32";
         CodeBuffer::instance().emit(castCode);
         DoAction(regNum,reg1Int, reg2Int, "mul");
     }
@@ -140,7 +139,7 @@ void CodeGenerator::generateMultiplicationCode(const retType *firstNum, const re
 
 void CodeGenerator::DoAction(const string& resultReg, const string& firstReg, const string& secondReg, const string& action)
 {
-    string code = resultReg + " = "+ action + " i32 %t" +firstReg + ", %t" + secondReg;
+    string code = resultReg + " = "+ action + " i32 " +firstReg + ", %t" + secondReg;
     CodeBuffer::instance().emit(code);
 }
 
@@ -302,5 +301,12 @@ void CodeGenerator::generateInitNewVar(const string& new_reg, const string& reg)
 {
     string code = new_reg + " = add i32 %t"+ reg + ", 0";
     CodeBuffer::instance().emit(code);
+}
+
+string CodeGenerator::generateTruncRegisterCode(const string &reg_to_trunc) {
+    string truncReg = RegisterGenerator::getRegister();
+    string truncCode = truncReg + " =  trunc i32 " +  reg_to_trunc+ " to i1";
+    CodeBuffer::instance().emit(truncCode);
+    return truncReg;
 }
 

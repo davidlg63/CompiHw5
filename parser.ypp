@@ -414,9 +414,11 @@ using namespace std;
 											string freshReg = RegisterGenerator::getRegister();
 											string check_if_exp_false = freshReg + " = icmp eq i32 0, " + exp->reg;
 											codeBuff.emit(check_if_exp_false);
-											string truncReg = RegisterGenerator::getRegister();
-											string truncCode = truncReg + " =  trunc i32 " +  freshReg+ " to i1";
-											codeBuff.emit(truncCode);
+											string truncReg;
+											if(TYPE_BOOL != exp->type)
+											{											
+												truncReg = CodeGenerator::generateTruncRegisterCode(freshReg);
+											}
 											string branch_code = "br i1 " + truncReg + ", label @, label @";
 											int branch_line = codeBuff.emit(branch_code);
 											exp->trueList = codeBuff.makelist({branch_line, FIRST});
@@ -531,9 +533,9 @@ using namespace std;
 			 ;
 
 
-    Type: INT	                                                {$$ = new retType(); dynamic_cast<retType*>($$)-> type = Type_::TYPE_INT;} |
-		  BYTE	                                                {$$ = new retType(); dynamic_cast<retType*>($$)-> type = Type_::TYPE_BYTE;} |
-       	  BOOL	                                                {$$ = new retType(); dynamic_cast<retType*>($$)-> type = Type_::TYPE_BOOL;}
+    Type: INT	                                                {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_INT;} |
+		  BYTE	                                                {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_BYTE;} |
+       	  BOOL	                                                {$$ = new retType(); dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;}
 		  ;
 
 
@@ -719,11 +721,8 @@ using namespace std;
 																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
 																	std::string freshReg = RegisterGenerator::getRegister();
 																	std::string comparisonCode = freshReg + " = icmp eq i32 " + exp1->reg + ", " + exp2->reg;
-																	string truncReg = RegisterGenerator::getRegister();
-																	string truncCode = truncReg + " = trunc i32 " +  freshReg+ " to i1";
-																	std::string jumpCode = "br i1 "+ truncReg + ", label @, label @";
 																	codeBuff.emit(comparisonCode);
-																	codeBuff.emit(truncCode);
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
@@ -740,12 +739,9 @@ using namespace std;
 																	retType* result = dynamic_cast<retType*>($$);
 																	dynamic_cast<retType*>($$)->type = Type_::TYPE_BOOL;
 																	std::string freshReg = RegisterGenerator::getRegister();
-																	std::string comparisonCode = freshReg + " = icmp ne i32 " + exp1->reg + ", " + exp2->reg;
-																	string truncReg = RegisterGenerator::getRegister();
-																	string truncCode =truncReg + " = trunc i32 " +  freshReg+ " to i1";
-																	std::string jumpCode = "br i1 "+ truncReg + ", label @, label @";
+																	std::string comparisonCode = freshReg + " = icmp eq i32 " + exp1->reg + ", " + exp2->reg;
 																	codeBuff.emit(comparisonCode);
-																	codeBuff.emit(truncCode);
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
@@ -771,11 +767,8 @@ using namespace std;
 																	{
 																		comparisonCode = freshReg + " = icmp slt i32 " + exp1->reg + ", " + exp2->reg;
 																	}
-																	string truncReg = RegisterGenerator::getRegister();
-																    string truncCode = truncReg + " = trunc i32 " +  freshReg+ " to i1";
-																	std::string jumpCode = "br i1 "+ truncReg + ", label @, label @";
 																	codeBuff.emit(comparisonCode);
-																	codeBuff.emit(truncCode);
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
@@ -801,11 +794,8 @@ using namespace std;
 																	{
 																		comparisonCode = freshReg + " = icmp sgt i32 " + exp1->reg + ", " + exp2->reg;
 																	}
-																	string truncReg = RegisterGenerator::getRegister();
-																	string truncCode = truncReg + " = trunc i32 " +  freshReg+ " to i1";
-																	std::string jumpCode = "br i1 "+ truncReg + ", label @, label @";
 																	codeBuff.emit(comparisonCode);
-																	codeBuff.emit(truncCode);
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
@@ -831,11 +821,8 @@ using namespace std;
 																	{
 																		comparisonCode = freshReg + " = icmp sle i32 " + exp1->reg + ", " + exp2->reg;
 																	}
-																	string truncReg = RegisterGenerator::getRegister();
-																	string truncCode = truncReg + " = trunc i32 " +  freshReg+ " to i1";
-																	std::string jumpCode = "br i1 "+ truncReg + ", label @, label @";
 																	codeBuff.emit(comparisonCode);
-																	codeBuff.emit(truncCode);
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
@@ -861,11 +848,8 @@ using namespace std;
 																	{
 																		comparisonCode = freshReg + " = icmp sge i32 " + exp1->reg + ", " + exp2->reg;
 																	}
-																	string truncReg = RegisterGenerator::getRegister();
-																	string truncCode = truncReg + " = trunc i32 " +  freshReg+ " to i1";
-																	std::string jumpCode = "br i1 "+ truncReg + ", label @, label @";
 																	codeBuff.emit(comparisonCode);
-																	codeBuff.emit(truncCode);
+																	std::string jumpCode = "br i1 "+ freshReg + ", label @, label @";
 																	int lineOfCode = codeBuff.emit(jumpCode);
 																	result->trueList = codeBuff.makelist({lineOfCode, BranchLabelIndex::FIRST});
                                                                     result->falseList = codeBuff.makelist({lineOfCode, BranchLabelIndex::SECOND});
@@ -890,9 +874,7 @@ using namespace std;
 						CheckType(exp->type, Type_::TYPE_BOOL);
 						if(exp->reg != "")
 						{
-							string truncReg = RegisterGenerator::getRegister();
-							string truncCode = truncReg + " = trunc i32 " +  exp->reg + " to i1";
-							codeBuff.emit(truncCode);
+							string truncReg = CodeGenerator::generateTruncRegisterCode(exp->reg);
 							int branch_line = codeBuff.emit("br i1 " + truncReg + ", label @, label @");
 							exp->trueList = codeBuff.makelist({branch_line, FIRST});
 							exp->falseList = codeBuff.makelist({branch_line, SECOND});
